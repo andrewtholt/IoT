@@ -1,7 +1,7 @@
 /* 
-*  A forked server
-*  by Martin Broadhurst (www.martinbroadhurst.com)
-*/
+ *  A forked server
+ *  by Martin Broadhurst (www.martinbroadhurst.com)
+ */
 
 #include <stdio.h>
 #include <string.h> /* memset() */
@@ -15,17 +15,105 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+#include <hiredis.h>
+
 #include "helper.h"
 
+#include "globals.h"
 
-#define PORT    "9091" /* Port to listen on */
+
+#define PORT    "9090" /* Port to listen on */
 #define BACKLOG     10  /* Passed to listen() */
+// 
+// Error Codes
 
-bool verbose;
+
+#define OK 0
+#define REDIS 0x80
+#define CONNECTFAIL 0x01
+#define ALREADYCONNECTED 0x02
+#define UNKNOWN 0x04
+
+globalSettings globals;
+/*
+struct {
+    bool verbose;
+    int redisPort;
+    char redisIp[32];
+} globals;
+*/
+
 /* Signal handler to reap zombie processes */
 
 static void wait_for_child(int sig) {
     while (waitpid(-1, NULL, WNOHANG) > 0);
+}
+
+void errorMessage(int rc,char *msg) {
+
+    switch(rc) {
+        case OK:
+            strcpy(msg,"OK\n");
+            break;
+        case (REDIS | CONNECTFAIL):
+            strcpy(msg,"ERROR:REDIS CONNECTFAIL\n");
+            break;
+        case (REDIS | ALREADYCONNECTED):
+            strcpy(msg,"WARNING:REDIS CONNECTED\n");
+            break;
+        case (REDIS | UNKNOWN):
+            strcpy(msg,"WARNING:REDIS CLIENT_UNKNOWN\n");
+            break;
+        default:
+            strcpy(msg,"ERROR:UNKNOWN\n");
+            break;
+    }
+}
+
+// IN: Redis server ip address
+// IN: Redis Port number 
+// IN: Client name
+// OUT: Result code
+// RETURN: redis context.
+//
+redisContext *connectToRedis(char *ip, int port, char *name, int *rc) {
+    redisContext *c;
+    redisReply *r;
+    redisReply *r1;
+
+    c = redisConnect(ip,port);
+    if( c!=NULL && c->err) {
+        fprintf(stderr,"Error: %s\n", c->errstr);
+        *rc = REDIS | CONNECTFAIL;
+        return ((redisContext *)NULL);
+    }
+
+    r=(redisReply *)redisCommand(c,"PING");
+    freeReplyObject(r);
+
+    r = (redisReply *)redisCommand(c,"HMGET %s connected",name);
+    printf("Reply=%s\n", r->element[0]->str);
+
+    if( !r->element[0]->str ) {  // if name not found
+        *rc=REDIS|UNKNOWN;
+        c=((redisContext *)NULL);
+        freeReplyObject(r);
+        return(c);
+    }
+
+    if( !strcmp(r->element[0]->str,"false")) { // Not connected
+        r1 = (redisReply *)redisCommand(c,"HSET %s connected true",name);
+        freeReplyObject(r1);
+        *rc=0;
+    } else {
+        *rc = REDIS | CONNECTFAIL;
+        redisFree(c);
+        c=((redisContext *)NULL);
+    }
+    freeReplyObject(r);
+
+    *rc=0;
+    return(c);
 }
 /*
  * ATH:  This is where the real work is done.
@@ -43,6 +131,8 @@ void handle(int newsock) {
     char *p1=(char *)NULL;
     char *p2=(char *)NULL;
     char nodename[255];
+    redisContext *data;
+    int error=0;
 
 
     /*
@@ -70,38 +160,48 @@ void handle(int newsock) {
 
                     ptr = strtok(buffer," \r\n");
                     if(!strcmp(ptr,"^exit")) {
-                            runFlag=false;
+                        runFlag=false;
                     } else if(!strcmp(ptr,"^set")) {
                         p1=strtok(NULL," ");
                         p2=strtok(NULL," \r\n");
 
                         if(identified && (!strcmp(p1,"NODENAME"))) {
                             // If the nodename is set, don't allow me to change it.
-                                if(verbose) {
-                                    fprintf(stderr,"Already Knowm\n");
-                                }
-                                Writeline(newsock,(void *)"ERROR:KNOWN\n",12);
+                            if(globals.getVerbose()) {
+                                fprintf(stderr,"Already Knowm\n");
+                            }
+                            Writeline(newsock,(void *)"ERROR:KNOWN\n",12);
                         } else if(!identified && (strcmp(p1,"NODENAME"))) {
                             // If the nodename is not set don't allow me to set anything else
-                                if(verbose) {
-                                    fprintf(stderr,"Who are you?\n");
-                                }
-                                Writeline(newsock,(void *)"ERROR:WHO\n",10);
+                            if(globals.getVerbose()) {
+                                fprintf(stderr,"Who are you?\n");
+                            }
+                            Writeline(newsock,(void *)"ERROR:WHO\n",10);
                         } else if(!identified && (!strcmp(p1,"NODENAME"))) {
-                            strncpy(nodename,p2,strlen(p2)); // fix this min(strlen(p2),sizeof(nodename))
+                            data=connectToRedis(globals.getRedisIP(),globals.getRedisPort(), p2, &error);
+
+                            if( data != (redisContext *) NULL ) {
+                                globals.setNodeName(p2);
+                                identified=true;
+                                Writeline(newsock,(void *)"OK\n",3);
+                            } else {
+                                char m[255];
+
+                                errorMessage(rc,m);
+                                Writeline(newsock,(void *)m,strlen(m));
+                                identified=false;
+                            }
                             // If nodename not set, and I'm trying to set it then OK.
                             //
                             // Check if nodename is know to me.
                             // If not send ERROR:UNKNOWN and disconnect
                             // If known load config and send OK
                             //
-                            identified=true;
                         } else if(identified) {
                             // Nodename set.
                             //
                             sprintf(buffer,"HSET %s %s %s\n", nodename,p1,p2);
                             Writeline(newsock,buffer,strlen(buffer));
-
                         }
                     }
 
@@ -110,14 +210,15 @@ void handle(int newsock) {
             }
         }
     }
+    redisCommand(data,"HSET %s connected false", globals.getNodeName());
     close(newsock);
+    exit(0);
 }
 
 int main(int argc,char *argv[]) {
     bool verbose=false;
 
     int sock;
-    char port[6];
 
     struct sigaction sa;
     struct addrinfo hints, *res;
@@ -125,28 +226,33 @@ int main(int argc,char *argv[]) {
 
     int opt;
 
-    (void) strncpy(port,PORT,sizeof(port));
 
-    while((opt=getopt(argc,argv,"p:vh?"))!=-1) {
+    while((opt=getopt(argc,argv,"P:p:R:vh?"))!=-1) {
         switch(opt) {
             case 'h':
                 printf("\nHelp\n\n");
                 exit(0);
                 break;
             case 'v':
-                verbose=true;
+                globals.setVerbose(true);
                 break;
-            case 'p':
-                (void) strncpy(port,optarg,sizeof(port));
+            case 'p':  // Port that I will listen to.
+                globals.setPort(optarg);
+                break;
+            case 'P':   // Port redis listens on
+                globals.setRedisPort(atoi(optarg));
+                break;
+            case 'R':   // Set Redis IP address.
+                globals.setRedisIP( optarg );
                 break;
             default:
                 break;
         }
     }
 
-    if(verbose) {
+    if(globals.getVerbose()) {
         printf("\n\tSettings\n\n");
-        printf("port:    %4s\n",port);
+        globals.display();
     }
 
     /* Get the address info */
@@ -154,7 +260,7 @@ int main(int argc,char *argv[]) {
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
 
-    if (getaddrinfo(NULL, port, &hints, &res) != 0) {
+    if (getaddrinfo(NULL, globals.getPort(), &hints, &res) != 0) {
         perror("getaddrinfo");
         return 1;
     }
