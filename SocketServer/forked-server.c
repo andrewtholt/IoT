@@ -202,10 +202,18 @@ void handle(int newsock) {
                             // If known load config and send OK
                             //
                         } else if(identified) {
+                            redisReply *reply;
                             // Nodename set.
                             //
-                            sprintf(outBuffer,"HSET %s %s %s\n", globals.getNodeName(),p1,p2);
-                            Writeline(newsock,outBuffer,strlen(outBuffer));
+                            sprintf(outBuffer,"HSET %s %s %s", globals.getNodeName(),p1,p2);
+
+                            reply=(redisReply *)redisCommand(data,outBuffer);
+                            if( !reply) {
+                                sprintf(outBuffer,"ERROR:COMMAND\n");
+                            } else {
+                                sprintf(outBuffer,"OK\n");
+                            } 
+                            Writeline(newsock,(void *)outBuffer,strlen(outBuffer));
                         }
                     }
 

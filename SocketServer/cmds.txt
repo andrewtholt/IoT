@@ -1,0 +1,46 @@
+
+Command: ^dump
+Description:
+    Display the parameters and the topics subscribed.
+
+Command: ^get
+Description:
+    Return a paramaters value.
+
+Command: ^set
+Description:
+    Set a parameter to a value
+
+    e.g. ^set NAME Fred
+
+Command: ^lock
+Description:
+    Make a parameter read only.
+
+Command: ^sub
+Description:
+    Add a topic to the internal subscription list.
+
+Command: ^pub
+Description:
+    Publish data.
+
+Command: ^connect
+Description:
+    Connect to the MQTT server in SERVER and PORT, or use the defaults of localhost and ???.
+    On connection will subscribe to all the topics in the subscribe list.
+
+Command: ^save
+Description:
+    Write the current state of parameters and subscription list to a file, as defined
+    by SAVETO and NODE.
+
+Command: ^load
+Description:
+    Load config.
+
+Command: ^exit
+Description:
+    Exit
+
+
