@@ -28,7 +28,7 @@
 /*  Function declarations  */
 
 ssize_t Readline(int fd, void *vptr, int maxlen);
-ssize_t Writeline(int fc, void *vptr, int maxlen);
+int Writeline(int fc, void *vptr, int maxlen);
 
 
 #endif  /*  PG_SOCK_HELP  */

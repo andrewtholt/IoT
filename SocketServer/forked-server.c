@@ -1,6 +1,6 @@
-/* 
+/*
  *  A forked server
- *  by Martin Broadhurst (www.martinbroadhurst.com)
+ * based on work  by Martin Broadhurst (www.martinbroadhurst.com)
  */
 
 #include <stdio.h>
@@ -24,7 +24,7 @@
 
 #define PORT    "9090" /* Port to listen on */
 #define BACKLOG     10  /* Passed to listen() */
-// 
+//
 // Error Codes
 
 
@@ -71,7 +71,7 @@ void errorMessage(int rc,char *msg) {
 }
 
 // IN: Redis server ip address
-// IN: Redis Port number 
+// IN: Redis Port number
 // IN: Client name
 // OUT: Result code
 // RETURN: redis context.
@@ -81,6 +81,7 @@ redisContext *connectToRedis(char *ip, int port, char *name, int *rc) {
     redisReply *r;
     redisReply *r1;
 
+    globals.display();
     c = redisConnect(ip,port);
     if( c!=NULL && c->err) {
         fprintf(stderr,"Error: %s\n", c->errstr);
@@ -160,7 +161,6 @@ void handle(int newsock) {
             if(strlen(buffer) > 0) {
                 printf("Buffer:>%s<\n",buffer);
                 if(buffer[0] == '^') {
-                    printf("\tCommand\n");
 
                     ptr = strtok(buffer," \r\n");
                     if(!strcmp(ptr,"^exit")) {
@@ -184,14 +184,14 @@ void handle(int newsock) {
                         } else if(!identified && (!strcmp(p1,"NODENAME"))) {
                             data=connectToRedis(globals.getRedisIP(),globals.getRedisPort(), p2, &error);
 
-                            if( data != (redisContext *) NULL ) {
+                            if( (data != (redisContext *) NULL) && (error != 0) ) {
                                 globals.setNodeName(p2);
                                 identified=true;
                                 Writeline(newsock,(void *)"OK\n",3);
                             } else {
                                 char m[255];
 
-                                errorMessage(rc,m);
+                                errorMessage(error,m);
                                 Writeline(newsock,(void *)m,strlen(m));
                                 identified=false;
                             }
@@ -212,7 +212,7 @@ void handle(int newsock) {
                                 sprintf(outBuffer,"ERROR:COMMAND\n");
                             } else {
                                 sprintf(outBuffer,"OK\n");
-                            } 
+                            }
                             Writeline(newsock,(void *)outBuffer,strlen(outBuffer));
                         }
                     }
@@ -227,6 +227,14 @@ void handle(int newsock) {
     exit(0);
 }
 
+void usage(char * name) {
+  printf("\nUsage:%s -h|-v|-p <listen> -P <redis port> -R <Redis ip>\n", name);
+  printf("\t-h\t\tHelp.\n");
+  printf("\t-v\t\tVerbose.\n");
+  printf("\t-p <listen>\tPort that this service listens on.\n");
+  printf("\t-P <redis port>\tPort that Redis listens on.\n");
+  printf("\t-R <redis ip>\tAddress that Redis listens on.\n");
+}
 int main(int argc,char *argv[]) {
     bool verbose=false;
 
@@ -242,7 +250,7 @@ int main(int argc,char *argv[]) {
     while((opt=getopt(argc,argv,"P:p:R:vh?"))!=-1) {
         switch(opt) {
             case 'h':
-                printf("\nHelp\n\n");
+                usage(argv[0]);
                 exit(0);
                 break;
             case 'v':
@@ -320,7 +328,7 @@ int main(int argc,char *argv[]) {
     /* Main loop */
     while (1) {
         struct sockaddr_in their_addr;
-        size_t size = sizeof(struct sockaddr_in);
+        socklen_t size = sizeof(struct sockaddr_in);
         int newsock = accept(sock, (struct sockaddr*)&their_addr, &size);
         int pid;
 
