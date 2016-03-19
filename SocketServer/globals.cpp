@@ -13,22 +13,8 @@ globalSettings::globalSettings() {
 
     namePtr=(char *)NULL;
 }
-void globalSettings::setNodeName(char *p) {
-    namePtr=nodeName;
-    strncpy(nodeName,p,sizeof(nodeName));
-}
-
-char *globalSettings::getNodeName() {
-    return namePtr;
-}
 
 void globalSettings::display() {
-    printf("Nodename     : ");
-    if(namePtr != (char *)NULL) {
-        printf("%s\n",namePtr);
-    } else {
-        printf("<EMPTY>\n");
-    }
 
     printf("Verbose      : ");
     if(verbose) {

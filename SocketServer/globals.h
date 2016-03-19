@@ -1,7 +1,6 @@
 
 #ifdef __cplusplus
 class globalSettings {
-    char nodeName[32];
     bool verbose;
     int redisPort;
     char redisIp[32];
@@ -12,9 +11,6 @@ class globalSettings {
 
         globalSettings();
         void display(void);
-
-        void setNodeName(char *n);
-        char *getNodeName();
 
         void setVerbose(bool flag);
         bool getVerbose();

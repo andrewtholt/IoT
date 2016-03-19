@@ -20,6 +20,7 @@
 #include "helper.h"
 
 #include "globals.h"
+#include "errors.h"
 
 
 #define PORT    "9090" /* Port to listen on */
@@ -27,12 +28,13 @@
 //
 // Error Codes
 
-
+/*
 #define OK 0
 #define REDIS 0x80
 #define CONNECTFAIL 0x01
 #define ALREADYCONNECTED 0x02
 #define UNKNOWN 0x04
+*/
 
 globalSettings globals;
 /*
@@ -81,7 +83,6 @@ redisContext *connectToRedis(char *ip, int port, char *name, int *rc) {
     redisReply *r;
     redisReply *r1;
 
-    globals.display();
     c = redisConnect(ip,port);
     if( c!=NULL && c->err) {
         fprintf(stderr,"Error: %s\n", c->errstr);
@@ -112,6 +113,7 @@ redisContext *connectToRedis(char *ip, int port, char *name, int *rc) {
         c=((redisContext *)NULL);
     }
     freeReplyObject(r);
+    globals.display();
 
     *rc=0;
     return(c);
@@ -128,14 +130,13 @@ void handle(int newsock) {
     int rc=0;
     char buffer[255];
     char outBuffer[255];
+    char nodeName[255];
 
     char *ptr;
     char *p1=(char *)NULL;
     char *p2=(char *)NULL;
     redisContext *data;
     int error=0;
-
-
     /*
      * Get name of client (this will be used to create the client name).
      *
@@ -165,6 +166,23 @@ void handle(int newsock) {
                     ptr = strtok(buffer," \r\n");
                     if(!strcmp(ptr,"^exit")) {
                         runFlag=false;
+                    } else if(!strcmp(ptr,"^get")) {
+                        if (identified) {
+                          redisReply *reply;
+                          p1=strtok(NULL," \r\n");
+                          sprintf(outBuffer,"HGET %s %s", nodeName,p1);
+                          reply=(redisReply *)redisCommand(data,outBuffer);
+                          
+                          if(reply->len == 0) {
+                            sprintf(outBuffer,"ERROR:NOT FOUND\n");
+                          } else {
+                            sprintf(outBuffer,"OK:%s\n", reply->str);
+                          }
+                          Writeline(newsock,outBuffer,strlen(outBuffer));
+                          
+                          freeReplyObject(reply);
+                        }
+                        
                     } else if(!strcmp(ptr,"^set")) {
                         p1=strtok(NULL," ");
                         p2=strtok(NULL," \r\n");
@@ -184,8 +202,8 @@ void handle(int newsock) {
                         } else if(!identified && (!strcmp(p1,"NODENAME"))) {
                             data=connectToRedis(globals.getRedisIP(),globals.getRedisPort(), p2, &error);
 
-                            if( (data != (redisContext *) NULL) && (error != 0) ) {
-                                globals.setNodeName(p2);
+                            if( (data != (redisContext *) NULL) && (error == 0) ) {
+                                strncpy(nodeName,p2,sizeof(nodeName));
                                 identified=true;
                                 Writeline(newsock,(void *)"OK\n",3);
                             } else {
@@ -205,7 +223,7 @@ void handle(int newsock) {
                             redisReply *reply;
                             // Nodename set.
                             //
-                            sprintf(outBuffer,"HSET %s %s %s", globals.getNodeName(),p1,p2);
+                            sprintf(outBuffer,"HSET %s %s %s", nodeName,p1,p2);
 
                             reply=(redisReply *)redisCommand(data,outBuffer);
                             if( !reply) {
@@ -222,7 +240,7 @@ void handle(int newsock) {
             }
         }
     }
-    redisCommand(data,"HSET %s connected false", globals.getNodeName());
+    redisCommand(data,"HSET %s connected false", nodeName);
     close(newsock);
     exit(0);
 }

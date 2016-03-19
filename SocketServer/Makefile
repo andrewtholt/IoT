@@ -10,10 +10,13 @@ all:	$(BINS)
 globals.o:	globals.cpp globals.h
 	$(CCC) $(CPPFLAGS) -c -g globals.cpp -o globals.o
 
-forked-server:	forked-server.c helper.o globals.o
+forked-server:	forked-server.c helper.o globals.o errors.h
 	$(CCC) $(CPPFLAGS) -g forked-server.c helper.o globals.o $(INCS) $(LIBS) -o forked-server
 
 helper.o:	helper.c
+	$(CCC) -c -g $? -o $@
+
+client.o:	client.cpp client.h
 	$(CCC) -c -g $? -o $@
 
 tst:	tst.cpp globals.o globals.h
