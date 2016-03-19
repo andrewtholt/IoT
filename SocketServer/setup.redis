@@ -1,0 +1,3 @@
+
+flushdb
+HSET fred connected false
