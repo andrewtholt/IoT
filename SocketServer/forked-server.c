@@ -190,6 +190,11 @@ void usage(char * name) {
     printf("\t-p <listen>\tPort that this service listens on.\n");
     printf("\t-P <redis port>\tPort that Redis listens on.\n");
     printf("\t-R <redis ip>\tAddress that Redis listens on.\n");
+    printf("\n");
+    printf("Default behaviour is equivalent to:\n");
+    printf("\t%s -p 9090 -R 127.0.0.1 -P 6379\n",name);
+    printf("\n");
+
 }
 int main(int argc,char *argv[]) {
     bool verbose=false;
