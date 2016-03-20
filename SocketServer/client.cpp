@@ -144,6 +144,22 @@ void clientInstance::lock() {
     locked=true;
 }
 
+int clientInstance::cmdPub(char *name,char *value) {
+
+    int rc = OK;
+
+    rc = PARSER|NOTIMPLEMENTED;
+    return rc;
+}
+
+int clientInstance::cmdSub(char *name) {
+
+    int rc = OK;
+
+    rc = PARSER|NOTIMPLEMENTED;
+    return rc;
+}
+
 int clientInstance::cmdParser(char *cmd,char *reply) {
 
     int rc=OK;
@@ -165,7 +181,14 @@ int clientInstance::cmdParser(char *cmd,char *reply) {
             p1 = (char *)strtok( NULL, " \r\n");
             cmdGet( p1,reply);
             rc=OK;
+        } else if(!strcmp(c,"^sub")) {
+            p1 = (char *)strtok( NULL, " \r\n");
+            rc = cmdSub(p1);
+        } else if(!strcmp(c,"^pub")) {
+            p1 = (char *)strtok( NULL, " \r\n");
+            p2 = (char *)strtok( NULL, " \r\n");
 
+            rc = cmdPub(p1,p2);
         } else if(!strcmp(c,"^set")) {
             p1 = (char *)strtok( NULL, " \r\n");
             p2 = (char *)strtok( NULL, " \r\n");

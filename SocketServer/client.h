@@ -20,6 +20,8 @@ class clientInstance {
 
     int cmdSet( char *name, char *value);
     void cmdGet( char *name, char *value);
+    int cmdSub(char *name);
+    int cmdPub(char *name,char *value);
 
     public:
         clientInstance();

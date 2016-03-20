@@ -10,6 +10,7 @@
 
 #define PARSER 0x10
 #define NOTACMD 0x01
+#define NOTIMPLEMENTED 0x02
 
 #define REDIS 0x80
 #define CONNECTFAIL 0x01
