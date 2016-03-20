@@ -183,8 +183,6 @@ int clientInstance::cmdParser(char *cmd,char *reply) {
     return rc;
 }
 
-int clientInstance::cmdParser(char *cmd) {
-}
 
 
 

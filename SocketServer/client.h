@@ -33,7 +33,6 @@ class clientInstance {
         char *cmdGet( char *name, int *error);
         */
 
-        int cmdParser(char *cmd);
         int cmdParser(char *cmd, char *result);
 
         int cmdExit();
