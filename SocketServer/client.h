@@ -23,6 +23,7 @@ class clientInstance {
     int cmdSub(char *name);
     int cmdPub(char *name,char *value);
     int cmdClear();
+    int cmdLock();
 
     public:
         clientInstance();
@@ -44,7 +45,6 @@ class clientInstance {
 
         bool connected();
 
-        void lock();
 
         ~clientInstance();
 };

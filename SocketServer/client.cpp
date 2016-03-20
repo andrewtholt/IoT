@@ -140,8 +140,10 @@ int clientInstance::cmdSet(char *name, char *value) {
     return rc;
 }
 
-void clientInstance::lock() {
+int clientInstance::cmdLock() {
+    int rc=OK;
     locked=true;
+    return rc;
 }
 
 int clientInstance::cmdPub(char *name,char *value) {
@@ -184,9 +186,7 @@ int clientInstance::cmdParser(char *cmd,char *reply) {
     } else {
         c = (char *)strtok( cmd, " \r\n");
         if (!strcmp(c,"^lock")) {
-            lock();
-            strcpy(reply,"OK\n");
-            rc=OK;
+            rc=cmdLock();
         } else if(!strcmp(c,"^clear")) {
             rc=cmdClear();
         } else if(!strcmp(c,"^exit")) {
