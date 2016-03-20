@@ -3,9 +3,13 @@
 #define __MY_ERRORS
 
 #define OK 0
+#define CLIENTEXIT 0xff // not realy an erro, just convenient.
 
 #define GENERALERROR 0x01
 #define UNKNOWNDBTYPE 0x02
+
+#define PARSER 0x10
+#define NOTACMD 0x01
 
 #define REDIS 0x80
 #define CONNECTFAIL 0x01

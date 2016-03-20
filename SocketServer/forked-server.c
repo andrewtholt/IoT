@@ -159,91 +159,21 @@ void handle(int newsock) {
 
         if( rc > 0 ) {
             if(strlen(buffer) > 0) {
+                int err;
                 printf("Buffer:>%s<\n",buffer);
-                if(buffer[0] == '^') {
 
-                    ptr = strtok(buffer," \r\n");
-                    if(!strcmp(ptr,"^exit")) {
-                        client.cmdExit();
-//                        delete client;
-
-                        runFlag=false;
-                    } else if(!strcmp(ptr,"^get")) {
-
-                        if (identified) {
-                            redisReply *reply;
-                            p1=strtok(NULL," \r\n");
-                            sprintf(outBuffer,"HGET %s %s", nodeName,p1);
-                            reply=(redisReply *)redisCommand(data,outBuffer);
-
-                            if(reply->len == 0) {
-                                sprintf(outBuffer,"ERROR:NOT FOUND\n");
-                            } else {
-                                sprintf(outBuffer,"OK:%s\n", reply->str);
-                            }
-                            Writeline(newsock,outBuffer,strlen(outBuffer));
-
-                            freeReplyObject(reply);
-                        }
-                    } else if(!strcmp(ptr,"^set")) {
-                        char m[255];
-
-                        p1=strtok(NULL," ");
-                        p2=strtok(NULL," \r\n");
-
-                        errorMessage( client.cmdSet(p1,p2) ,m);
-                        Writeline(newsock,(void *)m,strlen(m));
-
-                        /*
-                        if(identified && (!strcmp(p1,"NODENAME"))) {
-                            // If the nodename is set, don't allow me to change it.
-                            if(globals.getVerbose()) {
-                                fprintf(stderr,"Already Knowm\n");
-                            }
-                            Writeline(newsock,(void *)"ERROR:KNOWN\n",12);
-                        } else if(!identified && (strcmp(p1,"NODENAME"))) {
-                            // If the nodename is not set don't allow me to set anything else
-                            if(globals.getVerbose()) {
-                                fprintf(stderr,"Who are you?\n");
-                            }
-                            Writeline(newsock,(void *)"ERROR:WHO\n",10);
-                        } else if(!identified && (!strcmp(p1,"NODENAME"))) {
-                            data=connectToRedis(globals.getRedisIP(),globals.getRedisPort(), p2, &error);
-
-                            if( (data != (redisContext *) NULL) && (error == 0) ) {
-                                strncpy(nodeName,p2,sizeof(nodeName));
-                                identified=true;
-                                Writeline(newsock,(void *)"OK\n",3);
-                            } else {
-                                char m[255];
-
-                                errorMessage(error,m);
-                                Writeline(newsock,(void *)m,strlen(m));
-                                identified=false;
-                            }
-                            // If nodename not set, and I'm trying to set it then OK.
-                            //
-                            // Check if nodename is know to me.
-                            // If not send ERROR:UNKNOWN and disconnect
-                            // If known load config and send OK
-                            //
-                        } else if(identified) {
-                            redisReply *reply;
-                            // Nodename set.
-                            //
-                            sprintf(outBuffer,"HSET %s %s %s", nodeName,p1,p2);
-
-                            reply=(redisReply *)redisCommand(data,outBuffer);
-                            if( !reply) {
-                                sprintf(outBuffer,"ERROR:COMMAND\n");
-                            } else {
-                                sprintf(outBuffer,"OK\n");
-                            }
-                            Writeline(newsock,(void *)outBuffer,strlen(outBuffer));
-                        }
-                        */
-                    }
-                } else {
+                err = client.cmdParser(buffer,outBuffer);
+                switch(err) {
+                    case OK:
+                        Writeline(newsock,outBuffer,strlen(outBuffer));
+                        break;
+                    case CLIENTEXIT:
+                        runFlag = false;
+                        break;
+                    default:
+                        sprintf(outBuffer,"ERROR:0x%02x\n", err);
+                        Writeline(newsock,outBuffer,strlen(outBuffer));
+                        break;
                 }
             }
         }

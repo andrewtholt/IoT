@@ -7,6 +7,7 @@
 class clientInstance {
     bool identified;
     bool verbose;
+    bool locked;
 
     char inBuffer[255];
     char outBuffer[255];
@@ -17,6 +18,9 @@ class clientInstance {
     int connectToRedis(char *ip, int port);
     redisReply *redisCmd(char *cmd);
 
+    int cmdSet( char *name, char *value);
+    void cmdGet( char *name, char *value);
+
     public:
         clientInstance();
         void display(void);
@@ -24,14 +28,21 @@ class clientInstance {
         void setVerbose(bool);
         bool getVerbose();
 
+        /*
         int cmdSet( char *name, char *value);
         char *cmdGet( char *name, int *error);
+        */
+
+        int cmdParser(char *cmd);
+        int cmdParser(char *cmd, char *result);
 
         int cmdExit();
 
         int connectToDB(int dbType, char *ip, int port);
 
         bool connected();
+
+        void lock();
 
         ~clientInstance();
 };
