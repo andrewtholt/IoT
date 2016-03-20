@@ -3,6 +3,10 @@
 #define __MY_ERRORS
 
 #define OK 0
+
+#define GENERALERROR 0x01
+#define UNKNOWNDBTYPE 0x02
+
 #define REDIS 0x80
 #define CONNECTFAIL 0x01
 #define ALREADYCONNECTED 0x02

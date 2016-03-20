@@ -1,3 +1,6 @@
+#include <hiredis.h>
+
+#define REDIS_DB 1
 
 #ifdef __cplusplus
 
@@ -9,6 +12,11 @@ class clientInstance {
     char outBuffer[255];
     char nodeName[255];
 
+    redisContext *data;
+
+    int connectToRedis(char *ip, int port);
+    redisReply *redisCmd(char *cmd);
+
     public:
         clientInstance();
         void display(void);
@@ -18,6 +26,12 @@ class clientInstance {
 
         int cmdSet( char *name, char *value);
         char *cmdGet( char *name, int *error);
+
+        int cmdExit();
+
+        int connectToDB(int dbType, char *ip, int port);
+
+        bool connected();
 
         ~clientInstance();
 };

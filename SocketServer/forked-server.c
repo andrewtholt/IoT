@@ -21,6 +21,7 @@
 
 #include "globals.h"
 #include "errors.h"
+#include "client.h"
 
 
 #define PORT    "9090" /* Port to listen on */
@@ -37,13 +38,6 @@
 */
 
 globalSettings globals;
-/*
-struct {
-    bool verbose;
-    int redisPort;
-    char redisIp[32];
-} globals;
-*/
 
 /* Signal handler to reap zombie processes */
 
@@ -137,6 +131,11 @@ void handle(int newsock) {
     char *p2=(char *)NULL;
     redisContext *data;
     int error=0;
+
+    clientInstance client;
+    if( (client.connectToDB(REDIS_DB,globals.getRedisIP(), globals.getRedisPort())) != 0) {
+        exit(1);
+    }
     /*
      * Get name of client (this will be used to create the client name).
      *
@@ -165,28 +164,37 @@ void handle(int newsock) {
 
                     ptr = strtok(buffer," \r\n");
                     if(!strcmp(ptr,"^exit")) {
+                        client.cmdExit();
+//                        delete client;
+
                         runFlag=false;
                     } else if(!strcmp(ptr,"^get")) {
+
                         if (identified) {
-                          redisReply *reply;
-                          p1=strtok(NULL," \r\n");
-                          sprintf(outBuffer,"HGET %s %s", nodeName,p1);
-                          reply=(redisReply *)redisCommand(data,outBuffer);
-                          
-                          if(reply->len == 0) {
-                            sprintf(outBuffer,"ERROR:NOT FOUND\n");
-                          } else {
-                            sprintf(outBuffer,"OK:%s\n", reply->str);
-                          }
-                          Writeline(newsock,outBuffer,strlen(outBuffer));
-                          
-                          freeReplyObject(reply);
+                            redisReply *reply;
+                            p1=strtok(NULL," \r\n");
+                            sprintf(outBuffer,"HGET %s %s", nodeName,p1);
+                            reply=(redisReply *)redisCommand(data,outBuffer);
+
+                            if(reply->len == 0) {
+                                sprintf(outBuffer,"ERROR:NOT FOUND\n");
+                            } else {
+                                sprintf(outBuffer,"OK:%s\n", reply->str);
+                            }
+                            Writeline(newsock,outBuffer,strlen(outBuffer));
+
+                            freeReplyObject(reply);
                         }
-                        
                     } else if(!strcmp(ptr,"^set")) {
+                        char m[255];
+
                         p1=strtok(NULL," ");
                         p2=strtok(NULL," \r\n");
 
+                        errorMessage( client.cmdSet(p1,p2) ,m);
+                        Writeline(newsock,(void *)m,strlen(m));
+
+                        /*
                         if(identified && (!strcmp(p1,"NODENAME"))) {
                             // If the nodename is set, don't allow me to change it.
                             if(globals.getVerbose()) {
@@ -233,8 +241,8 @@ void handle(int newsock) {
                             }
                             Writeline(newsock,(void *)outBuffer,strlen(outBuffer));
                         }
+                        */
                     }
-
                 } else {
                 }
             }
@@ -246,12 +254,12 @@ void handle(int newsock) {
 }
 
 void usage(char * name) {
-  printf("\nUsage:%s -h|-v|-p <listen> -P <redis port> -R <Redis ip>\n", name);
-  printf("\t-h\t\tHelp.\n");
-  printf("\t-v\t\tVerbose.\n");
-  printf("\t-p <listen>\tPort that this service listens on.\n");
-  printf("\t-P <redis port>\tPort that Redis listens on.\n");
-  printf("\t-R <redis ip>\tAddress that Redis listens on.\n");
+    printf("\nUsage:%s -h|-v|-p <listen> -P <redis port> -R <Redis ip>\n", name);
+    printf("\t-h\t\tHelp.\n");
+    printf("\t-v\t\tVerbose.\n");
+    printf("\t-p <listen>\tPort that this service listens on.\n");
+    printf("\t-P <redis port>\tPort that Redis listens on.\n");
+    printf("\t-R <redis ip>\tAddress that Redis listens on.\n");
 }
 int main(int argc,char *argv[]) {
     bool verbose=false;
