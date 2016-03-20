@@ -1,4 +1,9 @@
 
+Command:  ^clear
+Description:
+    For the connected client remove the database entry and recreate
+    with the minimum parameters (i.e connected=true)
+
 Command: ^dump
 Description:
     Display the parameters and the topics subscribed.
@@ -42,5 +47,13 @@ Description:
 Command: ^exit
 Description:
     Exit
+
+Command: 
+Description:
+    Exit
+
+Command: 
+Description:
+
 
 

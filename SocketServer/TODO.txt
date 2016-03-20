@@ -1,0 +1,14 @@
+
+Write loader.  Load setup for a client from a file.
+Usage: load -n <client name> -f <filename>
+
+Basically connects as <client name> and loads a series of commands 
+from the file.
+
+If client is already connected then exit.
+
+Q: Should lock be in the database, against each client ?
+
+Add command ^clear.  This removes the hash of a client and recreates the minimum
+required, i.e. HSET <name> connected true
+

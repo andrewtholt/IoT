@@ -22,6 +22,7 @@ class clientInstance {
     void cmdGet( char *name, char *value);
     int cmdSub(char *name);
     int cmdPub(char *name,char *value);
+    int cmdClear();
 
     public:
         clientInstance();

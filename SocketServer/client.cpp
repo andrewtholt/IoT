@@ -160,6 +160,18 @@ int clientInstance::cmdSub(char *name) {
     return rc;
 }
 
+int clientInstance::cmdClear() {
+
+    int rc = OK;
+
+    rc = PARSER|NOTIMPLEMENTED;
+
+    // DEL <name>
+    // HSET <name> connected true
+    // 
+    return rc;
+}
+
 int clientInstance::cmdParser(char *cmd,char *reply) {
 
     int rc=OK;
@@ -175,6 +187,8 @@ int clientInstance::cmdParser(char *cmd,char *reply) {
             lock();
             strcpy(reply,"OK\n");
             rc=OK;
+        } else if(!strcmp(c,"^clear")) {
+            rc=cmdClear();
         } else if(!strcmp(c,"^exit")) {
             rc=cmdExit();
         } else if(!strcmp(c,"^get")) {
