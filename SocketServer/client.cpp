@@ -163,10 +163,15 @@ int clientInstance::cmdSub(char *name) {
 }
 
 int clientInstance::cmdClear() {
-
+    char cmdBuffer[255];
+    redisReply *r;
     int rc = OK;
 
-    rc = PARSER|NOTIMPLEMENTED;
+    sprintf(cmdBuffer,"HSET %s connected true",nodeName);
+    r=redisCmd(cmdBuffer);
+    freeReplyObject(r);
+
+    // rc = PARSER|NOTIMPLEMENTED;
 
     // DEL <name>
     // HSET <name> connected true

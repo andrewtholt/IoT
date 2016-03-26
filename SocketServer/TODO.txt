@@ -9,6 +9,3 @@ If client is already connected then exit.
 
 Q: Should lock be in the database, against each client ?
 
-Add command ^clear.  This removes the hash of a client and recreates the minimum
-required, i.e. HSET <name> connected true
-
