@@ -24,6 +24,7 @@ class clientInstance {
     int cmdPub(char *name,char *value);
     int cmdClear();
     int cmdDump();
+    int cmdConnect();  // connect to broker, MQTT in this case
     int cmdLock();
 
     public:

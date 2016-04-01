@@ -162,6 +162,14 @@ int clientInstance::cmdDump() {
     return rc;
 }
 
+int clientInstance::cmdConnect() {
+
+    int rc = OK;
+
+    rc = PARSER|NOTIMPLEMENTED;
+    return rc;
+}
+
 int clientInstance::cmdSub(char *name) {
     redisReply *r;
     int rc = OK;
@@ -239,20 +247,15 @@ int clientInstance::cmdParser(char *cmd,char *reply) {
             p2 = (char *)strtok( NULL, " \r\n");
 
             rc = cmdPub(p1,p2);
+        } else if(!strcmp(c,"^connect")) {
+            rc = cmdConnect();
         } else if(!strcmp(c,"^dump")) {
             rc = cmdDump();
-
         } else if(!strcmp(c,"^set")) {
             p1 = (char *)strtok( NULL, " \r\n");
             p2 = (char *)strtok( NULL, " \r\n");
 
             rc = cmdSet(p1,p2);
-
-                /*
-            if( rc == OK ) {
-                sprintf(reply,"OK\n");
-            }
-            */
         } else {
             rc = PARSER|UNKNOWN;
         }
@@ -264,6 +267,9 @@ int clientInstance::cmdParser(char *cmd,char *reply) {
             break;
         case (PARSER|UNKNOWN):
             sprintf(reply,"PARSER:UNKNOWN\n");
+            break;
+        case PARSER|NOTIMPLEMENTED:
+            sprintf(reply,"PARSER:UNIMPLEMENTED\n");
             break;
         case CLIENTEXIT:
             sprintf(reply,"OK\n");
