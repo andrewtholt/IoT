@@ -23,6 +23,7 @@ class clientInstance {
     int cmdSub(char *name);
     int cmdPub(char *name,char *value);
     int cmdClear();
+    int cmdDump();
     int cmdLock();
 
     public:

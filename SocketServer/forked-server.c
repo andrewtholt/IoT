@@ -163,6 +163,11 @@ void handle(int newsock) {
                 printf("Buffer:>%s<\n",buffer);
 
                 err = client.cmdParser(buffer,outBuffer);
+                Writeline(newsock,outBuffer,strlen(outBuffer));
+                if (CLIENTEXIT == err ) {
+                    runFlag=false;
+                }
+                /*
                 switch(err) {
                     case OK:
                         Writeline(newsock,outBuffer,strlen(outBuffer));
@@ -175,6 +180,7 @@ void handle(int newsock) {
                         Writeline(newsock,outBuffer,strlen(outBuffer));
                         break;
                 }
+                */
             }
         }
     }
