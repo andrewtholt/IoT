@@ -166,6 +166,16 @@ int clientInstance::cmdConnect() {
 
     int rc = OK;
 
+    // 
+    // Check if we want to subscribe to any services,
+    //
+    // connect to MQTT server
+    // if subscribed is not nil or length > 0
+    //  start thread to listen for MQTT messages
+    // endif
+    //
+    // Listen on socket, only ^pub is allowed
+
     rc = PARSER|NOTIMPLEMENTED;
     return rc;
 }
