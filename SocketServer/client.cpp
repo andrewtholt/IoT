@@ -197,6 +197,7 @@ int clientInstance::cmdSub(char *name) {
         r=redisCmd(cmdBuffer);
     } else {
         printf("%s defined\n",name);
+        memset( scratchBuffer,0,(size_t)sizeof(scratchBuffer));
         strncpy( scratchBuffer, r->str, (size_t) sizeof(scratchBuffer));
         freeReplyObject(r);
         strcat( scratchBuffer, ":" );
