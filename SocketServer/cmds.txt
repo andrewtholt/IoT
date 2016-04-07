@@ -1,8 +1,9 @@
 
-Command:  ^clear
+Command:  ^clear all|<name>
 Description:
-    For the connected client remove the database entry and recreate
-    with the minimum parameters (i.e connected=true)
+    If all or just ^clear then for the connected client remove the database entry and recreate
+    with the minimum parameters (i.e connected=true).#
+    If a name is givne remove that parameter.
 
 Command: ^dump
 Description:
