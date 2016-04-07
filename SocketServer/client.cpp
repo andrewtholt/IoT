@@ -9,6 +9,7 @@ clientInstance::clientInstance() {
     verbose=false;
     identified=false;
     locked=false;
+    brokerConnected=false;
 }
 
 clientInstance::~clientInstance() {

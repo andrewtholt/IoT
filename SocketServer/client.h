@@ -8,6 +8,7 @@ class clientInstance {
     bool identified;
     bool verbose;
     bool locked;
+    bool brokerConnected;
 
     char inBuffer[255];
     char outBuffer[255];
