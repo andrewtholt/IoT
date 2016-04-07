@@ -1,4 +1,28 @@
 
+When connected to a mesage broker (e.g. MQTT or Spread) only the following commands
+function.  Others are ignored silently.
+    ^pub
+    ^exit
+    ^get
+    ^disconnect
+
+When NOT connected to a message broker the following return an error:
+    ^pub
+    ^disconnect
+
+Special variables:
+
+If the variable does not exist the default is assumed.
+
+    Name        Default
+    ====        =======
+    REPORTERR   false   Return success/fail messages when connected.
+
+
+
+Commands
+========
+
 Command:  ^clear all|<name>
 Description:
     If all or just ^clear then for the connected client remove the database entry and recreate
