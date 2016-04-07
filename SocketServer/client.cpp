@@ -298,7 +298,9 @@ int clientInstance::cmdParser(char *cmd,char *reply) {
     }
     switch(rc) {
         case OK:
-            sprintf(reply,"OK\n");
+            if(strlen(reply) == 0) {
+                sprintf(reply,"OK\n");
+            }
             break;
         case (PARSER|UNKNOWN):
             sprintf(reply,"PARSER:UNKNOWN\n");
