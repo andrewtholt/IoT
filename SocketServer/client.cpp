@@ -212,14 +212,36 @@ int clientInstance::cmdSub(char *name) {
     return rc;
 }
 
-int clientInstance::cmdClear() {
+void clientInstance::doClearAll() {
     char cmdBuffer[255];
     redisReply *r;
-    int rc = OK;
+
+    sprintf(cmdBuffer,"DEL %s", nodeName);
+    r=redisCmd(cmdBuffer);
+    freeReplyObject(r);
 
     sprintf(cmdBuffer,"HSET %s connected true",nodeName);
     r=redisCmd(cmdBuffer);
     freeReplyObject(r);
+}
+
+int clientInstance::cmdClear(char *name) {
+    char cmdBuffer[255];
+    redisReply *r;
+    int rc = OK;
+
+    if( name == (char *)NULL) {
+        doClearAll();
+        return rc;
+    }
+
+    if (!strcmp(name,"all" )) {
+        doClearAll();
+    } else {
+        sprintf(cmdBuffer,"HDEL %s %s",nodeName,name);
+        r=redisCmd(cmdBuffer);
+        freeReplyObject(r);
+    }
 
     // rc = PARSER|NOTIMPLEMENTED;
 
@@ -243,7 +265,8 @@ int clientInstance::cmdParser(char *cmd,char *reply) {
         if (!strcmp(c,"^lock")) {
             rc=cmdLock();
         } else if(!strcmp(c,"^clear")) {
-            rc=cmdClear();
+            p1 = (char *)strtok( NULL, " \r\n");
+            rc=cmdClear(p1);
         } else if(!strcmp(c,"^exit")) {
             rc=cmdExit();
         } else if(!strcmp(c,"^get")) {

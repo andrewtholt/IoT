@@ -22,10 +22,11 @@ class clientInstance {
     void cmdGet( char *name, char *value);
     int cmdSub(char *name);
     int cmdPub(char *name,char *value);
-    int cmdClear();
+    int cmdClear(char *name);
     int cmdDump();
     int cmdConnect();  // connect to broker, MQTT in this case
     int cmdLock();
+    void doClearAll();
 
     public:
         clientInstance();
