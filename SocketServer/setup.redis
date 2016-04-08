@@ -2,4 +2,4 @@
 flushdb
 
 HSET fred connected false
-HMSET fred MQTT_SERVER 127.0.0.1 MQTT_PORT 1883
+HMSET fred MQTT_SERVER 127.0.0.1 MQTT_PORT 1883 MQTT_ROOT /home

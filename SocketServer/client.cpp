@@ -176,7 +176,30 @@ int clientInstance::cmdConnect() {
     // endif
     //
     // Listen on socket, only ^pub is allowed
-
+    //
+    // Also need to set up a path for subscriptions.
+    //
+    // Have a set of variables that are used to construct a ath ?
+    // e.g.
+    // LOCATION - e.g. inside, outide, fron, back or a room, kitchen lounge etc
+    // FUNCTION - e.g. temperature_sense, light_sense, light_switch etc
+    //
+    // And use the variable name and nodename (e.g. fred) , e.g
+    //
+    // ^set MQTT_ROOT /home
+    // ^set LOCATION OUTSIDE
+    // ^set FUNCTION LIGHT_SENSE
+    // ^pub LEVEL 75
+    //
+    // Would, from an MQTT perspective publish:
+    // /home/OUTSIDE/fred/LIGHT_SENSE/LEVEL
+    // 
+    // This allows the restructure of the paths without changing the sensor code.
+    //
+    // Similarly for subscribe
+    //
+    // ^sub LIGHT_SENSE
+    //
     rc = PARSER|NOTIMPLEMENTED;
     return rc;
 }
