@@ -171,6 +171,7 @@ int clientInstance::cmdConnect() {
     char port[6];
     int portNum=0;
     int keepalive = 60;
+    int mosqRc=-1;
 
     int rc = 0x100;
     struct mosquitto *mosq = NULL;
@@ -210,44 +211,25 @@ int clientInstance::cmdConnect() {
     if(!mosq) {
         printf("MQTT ERROR\n");
     } else {
+        mosqRc = mosquitto_connect(mosq,address,portNum,keepalive);
+        printf("%s\n",mosquitto_strerror( mosqRc ));
 
-        printf("%s\n",mosquitto_strerror(mosquitto_connect(mosq,address,portNum,keepalive)));
+        switch( mosqRc ) {
+            case MOSQ_ERR_SUCCESS:
+                rc=OK;
+                break;
+            case MOSQ_ERR_INVAL:
+                rc=-1;  // TODO Replace with a meaningful value
+                break;
+            case MOSQ_ERR_ERRNO:
+                rc = -2; // TODO Replace with a meaningful value
+                break;
+            default:
+                rc = -3; // TODO Replace with a meaningful value
+                break;
+        }
     }
 
-
-    // 
-    // Check if we want to subscribe to any services,
-    //
-    // connect to MQTT server
-    // if subscribed is not nil or length > 0
-    //  start thread to listen for MQTT messages
-    // endif
-    //
-    // Listen on socket, only ^pub is allowed
-    //
-    // Also need to set up a path for subscriptions.
-    //
-    // Have a set of variables that are used to construct a ath ?
-    // e.g.
-    // LOCATION - e.g. inside, outide, fron, back or a room, kitchen lounge etc
-    // FUNCTION - e.g. temperature_sense, light_sense, light_switch etc
-    //
-    // And use the variable name and nodename (e.g. fred) , e.g
-    //
-    // ^set MQTT_ROOT /home
-    // ^set LOCATION OUTSIDE
-    // ^set FUNCTION LIGHT_SENSE
-    // ^pub LEVEL 75
-    //
-    // Would, from an MQTT perspective publish:
-    // /home/OUTSIDE/fred/LIGHT_SENSE/LEVEL
-    // 
-    // This allows the restructure of the paths without changing the sensor code.
-    //
-    // Similarly for subscribe
-    //
-    // ^sub LIGHT_SENSE
-    //
 //    rc = PARSER|NOTIMPLEMENTED;
     return rc;
 }
