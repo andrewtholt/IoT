@@ -165,7 +165,14 @@ int clientInstance::cmdDump() {
 
 int clientInstance::cmdConnect() {
 
+    char cmdBuffer[255];
+    redisReply *r;
+
     int rc = OK;
+
+//    HMSET fred MQTT_SERVER 127.0.0.1 MQTT_PORT 1883
+    sprintf(cmdBuffer,"HGET fred MQTT_SERVER");
+    r=redisCmd(cmdBuffer);
 
     // 
     // Check if we want to subscribe to any services,
