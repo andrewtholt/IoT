@@ -146,6 +146,9 @@ void handle(int newsock) {
      *
      * wait for destination and message.
      */
+    // 
+    // TODO: If client disconnects  run redis command to set connected to false.
+    //
     while(runFlag) {
 
         memset( buffer, (int) 0, sizeof(buffer));

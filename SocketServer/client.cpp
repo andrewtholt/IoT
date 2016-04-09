@@ -167,12 +167,53 @@ int clientInstance::cmdConnect() {
 
     char cmdBuffer[255];
     redisReply *r;
+    char address[32];
+    char port[6];
+    int portNum=0;
+    int keepalive = 60;
 
-    int rc = OK;
+    int rc = 0x100;
+    struct mosquitto *mosq = NULL;
+
+    bool clean_session = false; // TODO What?
+
 
 //    HMSET fred MQTT_SERVER 127.0.0.1 MQTT_PORT 1883
     sprintf(cmdBuffer,"HGET fred MQTT_SERVER");
     r=redisCmd(cmdBuffer);
+
+    if( r->type == REDIS_REPLY_NIL ) {
+        printf("Undefined MQTT_SERVER\n");
+        freeReplyObject(r);
+    }
+
+    if( r->type == REDIS_REPLY_STRING) {
+        memset(address, 0, sizeof( address));
+        memset(port, 0, sizeof( port));
+
+        strncpy(address,r->str,sizeof(address));
+        freeReplyObject(r);
+
+        sprintf(cmdBuffer,"HGET fred MQTT_PORT");
+        r=redisCmd(cmdBuffer);
+        if( r->type == REDIS_REPLY_STRING ) {
+            strncpy(port,r->str,sizeof(port));
+            portNum=atoi(port);
+            rc=OK;
+        }
+        freeReplyObject(r);
+    }
+    mosquitto_lib_init();
+
+    mosq = mosquitto_new(nodeName,clean_session,NULL);
+
+    if(!mosq) {
+        printf("MQTT ERROR\n");
+    } else {
+
+        printf("%s\n",mosquitto_strerror(mosquitto_connect(mosq,address,portNum,keepalive)));
+    }
+
 
     // 
     // Check if we want to subscribe to any services,
@@ -207,7 +248,7 @@ int clientInstance::cmdConnect() {
     //
     // ^sub LIGHT_SENSE
     //
-    rc = PARSER|NOTIMPLEMENTED;
+//    rc = PARSER|NOTIMPLEMENTED;
     return rc;
 }
 

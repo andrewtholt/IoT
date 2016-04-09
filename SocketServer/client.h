@@ -1,4 +1,6 @@
 #include <hiredis.h>
+#include <stdlib.h>
+#include <mosquitto.h>
 
 #define REDIS_DB 1
 
