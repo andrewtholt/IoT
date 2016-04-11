@@ -3,6 +3,7 @@
 #include <mosquitto.h>
 
 #define REDIS_DB 1
+#define SQLITE_DB 2
 
 #ifdef __cplusplus
 
@@ -19,6 +20,7 @@ class clientInstance {
     redisContext *data;
 
     int connectToRedis(char *ip, int port);
+    int connectToSQLITE();
     redisReply *redisCmd(char *cmd);
 
     int cmdSet( char *name, char *value);

@@ -45,6 +45,13 @@ int clientInstance::connectToRedis(char *ip,int port) {
     return rc;
 }
 
+int clientInstance::connectToSQLITE() {
+    int rc=OK;
+
+    rc=UNKNOWNDBTYPE;
+
+    return rc;
+}
 // Connect to database, currently redis only.
 //
 int clientInstance::connectToDB( int dbType,char *ip, int port ) {
@@ -54,8 +61,10 @@ int clientInstance::connectToDB( int dbType,char *ip, int port ) {
         case REDIS_DB:
             rc=connectToRedis(ip,port);
             break;
+        case SQLITE_DB:
+            rc=connectToSQLITE();
+            break;
         default:
-            rc=UNKNOWNDBTYPE;
             break;
     }
 
