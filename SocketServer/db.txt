@@ -1,0 +1,9 @@
+
+Two 'types' of sqlite database.
+
+1.  Global, holds settings and is RO to clients.
+
+2.  Client, possibly in RAM, on disk to begin with in a file called 
+    <nodeName>.db.  Holds maps of clients short name to MQTT path for publish
+    and subscribe paths.  Can also hold MQTT server details if we want per 
+    client settings.  Check this first, and on fail check global.
