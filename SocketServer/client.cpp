@@ -125,6 +125,7 @@ int clientInstance::cmdSet(char *name, char *value) {
         if(!locked) {
             sprintf(cmdBuffer,"replace into %s_variables (name,value) values ('%s','%s')", nodeName,name,value);
             printf("DEBUG:%s\n",cmdBuffer);
+            rc = sqlite3_exec(db, cmdBuffer, NULL, 0, &zErrMsg);
         // 
         // TODO check for errors
         //
