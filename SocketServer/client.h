@@ -17,7 +17,7 @@ class clientInstance {
     char outBuffer[255];
     char nodeName[255];
 
-    redisContext *data;
+    redisContext *data=(redisContext *)NULL;
 
     int connectToRedis(char *ip, int port);
     int connectToSQLITE();

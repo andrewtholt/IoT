@@ -116,7 +116,7 @@ redisContext *connectToRedis(char *ip, int port, char *name, int *rc) {
  * ATH:  This is where the real work is done.
  */
 
-void handle(int newsock) {
+void handleConnection(int newsock) {
     /* recv(), send(), close() */
 
     bool runFlag=true;
@@ -134,6 +134,7 @@ void handle(int newsock) {
 
     clientInstance client;
     if( (client.connectToDB(REDIS_DB,globals.getRedisIP(), globals.getRedisPort())) != 0) {
+        fprintf(stderr, "FATAL ERROE:Failed to connect to redis at %s:%d\n", globals.getRedisIP(), globals.getRedisPort());
         exit(1);
     }
     /*
@@ -313,7 +314,7 @@ int main(int argc,char *argv[]) {
         if (pid == 0) {
             /* In child process */
             close(sock);
-            handle(newsock);
+            handleConnection(newsock);
             return 0;
         }
         else {

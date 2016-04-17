@@ -2,7 +2,7 @@
 flushdb
 
 HSET fred connected false
-HMSET fred MQTT_SERVER 127.0.0.1 MQTT_PORT 1883
+HMSET fred MQTT_SERVER 192.168.100.17 MQTT_PORT 1883
 
 HMSET sub_map TEMP /home/outside/back/temp
 
