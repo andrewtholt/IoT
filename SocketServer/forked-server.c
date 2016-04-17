@@ -15,7 +15,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#include <hiredis.h>
+// #include <hiredis.h>
 
 #include "helper.h"
 
@@ -51,14 +51,14 @@ void errorMessage(int rc,char *msg) {
         case OK:
             strcpy(msg,"OK\n");
             break;
-        case (REDIS | CONNECTFAIL):
-            strcpy(msg,"ERROR:REDIS CONNECTFAIL\n");
+        case (DATABASE | CONNECTFAIL):
+            strcpy(msg,"ERROR:DATABASE CONNECT FAIL\n");
             break;
-        case (REDIS | ALREADYCONNECTED):
-            strcpy(msg,"WARNING:REDIS CONNECTED\n");
+        case (DATABASE | ALREADYCONNECTED):
+            strcpy(msg,"WARNING:DATABASE CONNECTED\n");
             break;
-        case (REDIS | UNKNOWN):
-            strcpy(msg,"WARNING:REDIS CLIENT_UNKNOWN\n");
+        case (DATABASE | UNKNOWN):
+            strcpy(msg,"WARNING:DATABASE CLIENT_UNKNOWN\n");
             break;
         default:
             strcpy(msg,"ERROR:UNKNOWN\n");
@@ -72,6 +72,7 @@ void errorMessage(int rc,char *msg) {
 // OUT: Result code
 // RETURN: redis context.
 //
+/*
 redisContext *connectToRedis(char *ip, int port, char *name, int *rc) {
     redisContext *c;
     redisReply *r;
@@ -112,6 +113,7 @@ redisContext *connectToRedis(char *ip, int port, char *name, int *rc) {
     *rc=0;
     return(c);
 }
+*/
 /*
  * ATH:  This is where the real work is done.
  */
@@ -129,14 +131,16 @@ void handleConnection(int newsock) {
     char *ptr;
     char *p1=(char *)NULL;
     char *p2=(char *)NULL;
-    redisContext *data;
+//    redisContext *data;
     int error=0;
 
     clientInstance client;
-    if( (client.connectToDB(REDIS_DB,globals.getRedisIP(), globals.getRedisPort())) != 0) {
+    /*
+    if( (client.connectToDB(SQLITE_DB,globals.getRedisIP(), globals.getRedisPort())) != 0) {
         fprintf(stderr, "FATAL ERROE:Failed to connect to redis at %s:%d\n", globals.getRedisIP(), globals.getRedisPort());
         exit(1);
     }
+    */
     /*
      * Get name of client (this will be used to create the client name).
      *
@@ -188,7 +192,7 @@ void handleConnection(int newsock) {
             }
         }
     }
-    redisCommand(data,"HSET %s connected false", nodeName);
+//    redisCommand(data,"HSET %s connected false", nodeName);
     close(newsock);
     exit(0);
 }

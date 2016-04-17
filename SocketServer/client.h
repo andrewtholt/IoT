@@ -1,6 +1,6 @@
-#include <hiredis.h>
 #include <stdlib.h>
 #include <mosquitto.h>
+#include <sqlite3.h>
 
 #define REDIS_DB 1
 #define SQLITE_DB 2
@@ -16,12 +16,14 @@ class clientInstance {
     char inBuffer[255];
     char outBuffer[255];
     char nodeName[255];
+    sqlite3 *db;        // Connection to this clients database
+    sqlite3 *globalSettings; // RO connection to global data.
 
-    redisContext *data=(redisContext *)NULL;
+//    redisContext *data=(redisContext *)NULL;
 
     int connectToRedis(char *ip, int port);
     int connectToSQLITE();
-    redisReply *redisCmd(char *cmd);
+//    redisReply *redisCmd(char *cmd);
 
     int cmdSet( char *name, char *value);
     void cmdGet( char *name, char *value);

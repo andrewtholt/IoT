@@ -1,11 +1,15 @@
+drop table if exists fred_variables ;
 
-create settings (
+drop index if exists mqtt_map_forward ;
+drop index if exists mqtt_map_reverse ;
 
-);
-create table publish (
-    name varchar
+-- 
+-- can have multiple servers for load blancing or
+-- redundancy
+--
+create table fred_variables (
+    id integer primary key autoincrement,
+    name varchar unique,
+    value varchar
 );
 
-create table subscribe (
-    name varchar
-);

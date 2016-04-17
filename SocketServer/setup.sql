@@ -5,7 +5,7 @@ drop index if exists mqtt_map_forward ;
 drop index if exists mqtt_map_reverse ;
 
 -- 
--- can have multiplke server for load blancing or#
+-- can have multiple servers for load blancing or
 -- redundancy
 --
 create table mqtt_settings (
@@ -14,8 +14,8 @@ create table mqtt_settings (
     port int default 1883
 );
 
--- hold a shortahand version of the long path,
--- this assists device that have a small amount of
+-- hold a shorthand version of the long path,
+-- this assists devices that have a small amount of
 -- RAM in which to assemble messages.
 --
 create table mqtt_map (

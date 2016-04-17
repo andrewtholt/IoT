@@ -1,8 +1,9 @@
 CCC=g++
 # BINS=forked-server modbusd client httpd httpd_1 httpd_2 # echoserv
 BINS=tst forked-server
-LIBS=-lhiredis -L/usr/local/lib -lmosquitto
-INCS=-I/usr/include/hiredis
+# LIBS=-lhiredis -L/usr/local/lib -lmosquitto -lsqlite3
+LIBS=-L/usr/local/lib -lmosquitto -lsqlite3
+# INCS=-I/usr/include/hiredis
 CPPFLAGS=-Wwrite-strings
 
 all:	$(BINS)

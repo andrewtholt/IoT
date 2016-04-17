@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+#include <sqlite3.h>
 
 #include "client.h"
 #include "errors.h"
@@ -23,6 +24,7 @@ bool clientInstance::getVerbose() {
     return verbose;
 }
 
+/*
 int clientInstance::connectToRedis(char *ip,int port) {
     int rc=GENERALERROR;
 
@@ -41,14 +43,18 @@ int clientInstance::connectToRedis(char *ip,int port) {
             rc=OK;
         }
     }
-
     return rc;
 }
+*/
 
 int clientInstance::connectToSQLITE() {
     int rc=OK;
+    char dbName[255];
 
-    rc=UNKNOWNDBTYPE;
+
+    strncpy(dbName,nodeName,sizeof(dbName));
+    strncat(dbName,".db",  sizeof(dbName));
+    rc = sqlite3_open(dbName, &db);
 
     return rc;
 }
@@ -59,7 +65,7 @@ int clientInstance::connectToDB( int dbType,char *ip, int port ) {
 
     switch(dbType) {
         case REDIS_DB:
-            rc=connectToRedis(ip,port);
+//            rc=connectToRedis(ip,port);
             break;
         case SQLITE_DB:
             rc=connectToSQLITE();
@@ -76,6 +82,7 @@ int clientInstance::connectToDB( int dbType,char *ip, int port ) {
 }
 
 
+/*
 redisReply *clientInstance::redisCmd(char *cmd) {
     redisReply *r;
 
@@ -83,44 +90,44 @@ redisReply *clientInstance::redisCmd(char *cmd) {
 
     return r;
 }
+*/
 
 int clientInstance::cmdExit() {
-    redisReply *r;
     char cmdBuffer[255];
     int rc=0;
+    char *zErrMsg = 0;
 
-    sprintf(cmdBuffer,"HSET %s connected false",nodeName);
-    r=redisCmd(cmdBuffer);
-    freeReplyObject(r);
-    rc=CLIENTEXIT;
-
+    sprintf(cmdBuffer,"drop table if exists %s_variables",nodeName);
+    rc = sqlite3_exec(db, cmdBuffer, NULL, 0, &zErrMsg);
+    if ( rc == 0) {
+        rc=CLIENTEXIT;
+    }
     return rc;
 }
 
 void clientInstance::cmdGet(char *name,char *value) {
     char cmdBuffer[255];
-    redisReply *r;
 
-    sprintf(cmdBuffer,"HGET %s %s", nodeName,name);
-    r=redisCmd(cmdBuffer);
+    sprintf(cmdBuffer,"select value from %s_variables where name='%s'", nodeName, name );
+//    r=redisCmd(cmdBuffer);
 
-    sprintf(value,"OK:%s\n",r->str);
+
+//    sprintf(value,"OK:%s\n",r->str);
 }
 
 int clientInstance::cmdSet(char *name, char *value) {
     int rc=OK;
     char cmdBuffer[255];
-    redisReply *r;
+    char *zErrMsg = 0;
 
     if(identified) {  // If known can't set NODENAME
 
         if(!locked) {
-            sprintf(cmdBuffer,"HSET %s %s %s",nodeName,name,value);
-            r=redisCmd(cmdBuffer);
+            sprintf(cmdBuffer,"replace into %s_variables (name,value) values ('%s','%s')", nodeName,name,value);
+            printf("DEBUG:%s\n",cmdBuffer);
         // 
         // TODO check for errors
         //
-            freeReplyObject(r);
         } else {
             rc=OK;
         }
@@ -130,21 +137,16 @@ int clientInstance::cmdSet(char *name, char *value) {
         if(!strcmp(name,"NODENAME")) {
             rc=OK;
             strncpy(nodeName, value,sizeof(nodeName));
+            connectToSQLITE();
 
-            sprintf(cmdBuffer,"HGET %s connected",nodeName);
-            r=redisCmd(cmdBuffer);
-
-            if( !strcmp(r->str,"false")) {
-                // Not already connected.
-                freeReplyObject(r);
-                sprintf(cmdBuffer,"HSET %s connected true",nodeName);
-                r=redisCmd(cmdBuffer);
-                freeReplyObject(r);
+            sprintf(cmdBuffer, "create table %s_variables ( id integer primary key autoincrement, name varchar);", nodeName);
+            printf("DEBUG:%s\n",cmdBuffer);
+            rc = sqlite3_exec(db, cmdBuffer, NULL, 0, &zErrMsg);
+            if( 0 == rc) {
                 identified=true;
-            } else {
             }
         } else {
-            rc = REDIS | NOTCONNECTED;
+            rc = DATABASE | NOTCONNECTED;
         }
     }
     return rc;
@@ -175,7 +177,7 @@ int clientInstance::cmdDump() {
 int clientInstance::cmdConnect() {
 
     char cmdBuffer[255];
-    redisReply *r;
+//    redisReply *r;
     char address[32];
     char port[6];
     int portNum=0;
@@ -187,8 +189,9 @@ int clientInstance::cmdConnect() {
 
     bool clean_session = false; // TODO What?
 
-
-//    HMSET fred MQTT_SERVER 127.0.0.1 MQTT_PORT 1883
+// Get mqtt setting from global database.
+//
+    /*
     sprintf(cmdBuffer,"HGET fred MQTT_SERVER");
     r=redisCmd(cmdBuffer);
 
@@ -213,6 +216,7 @@ int clientInstance::cmdConnect() {
         }
         freeReplyObject(r);
     }
+    */
     mosquitto_lib_init();
 
     mosq = mosquitto_new(nodeName,clean_session,NULL);
@@ -244,11 +248,12 @@ int clientInstance::cmdConnect() {
 }
 
 int clientInstance::cmdSub(char *name) {
-    redisReply *r;
+//    redisReply *r;
     int rc = OK;
     char cmdBuffer[255];
     char scratchBuffer[255];
 
+    /*
     sprintf(cmdBuffer,"HGET %s subscribed",nodeName);
     r=redisCmd(cmdBuffer);
 
@@ -269,16 +274,22 @@ int clientInstance::cmdSub(char *name) {
         printf("cmdBuffer is %s\n",cmdBuffer);
         r=redisCmd(cmdBuffer);
     }
+    */
 
-//    rc = PARSER|NOTIMPLEMENTED;
+    rc = PARSER|NOTIMPLEMENTED;
 
     return rc;
 }
 
 void clientInstance::doClearAll() {
     char cmdBuffer[255];
-    redisReply *r;
+//    redisReply *r;
 
+    sprintf(cmdBuffer,"delete from %s_variables", nodeName);
+    printf("DEBUG:%s\n", cmdBuffer);
+    // TODO make sure connected flag is still set.
+    //
+    /*
     sprintf(cmdBuffer,"DEL %s", nodeName);
     r=redisCmd(cmdBuffer);
     freeReplyObject(r);
@@ -286,11 +297,12 @@ void clientInstance::doClearAll() {
     sprintf(cmdBuffer,"HSET %s connected true",nodeName);
     r=redisCmd(cmdBuffer);
     freeReplyObject(r);
+    */
 }
 
 int clientInstance::cmdClear(char *name) {
     char cmdBuffer[255];
-    redisReply *r;
+//    redisReply *r;
     int rc = OK;
 
     if( name == (char *)NULL) {
@@ -301,9 +313,14 @@ int clientInstance::cmdClear(char *name) {
     if (!strcmp(name,"all" )) {
         doClearAll();
     } else {
+        sprintf(cmdBuffer,"delete from %s_variables where name='%s'", nodeName,name);
+        printf("DEBUG:%s\n", cmdBuffer);
+    
+    /*
         sprintf(cmdBuffer,"HDEL %s %s",nodeName,name);
         r=redisCmd(cmdBuffer);
         freeReplyObject(r);
+        */
     }
 
     // rc = PARSER|NOTIMPLEMENTED;
