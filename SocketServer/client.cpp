@@ -140,7 +140,7 @@ int clientInstance::cmdSet(char *name, char *value) {
             strncpy(nodeName, value,sizeof(nodeName));
             connectToSQLITE();
 
-            sprintf(cmdBuffer, "create table %s_variables ( id integer primary key autoincrement, name varchar);", nodeName);
+            sprintf(cmdBuffer, "create table %s_variables ( id integer primary key autoincrement, name varchar unique, value varchar);", nodeName);
             printf("DEBUG:%s\n",cmdBuffer);
             rc = sqlite3_exec(db, cmdBuffer, NULL, 0, &zErrMsg);
             if( 0 == rc) {
