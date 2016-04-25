@@ -24,48 +24,31 @@ bool clientInstance::getVerbose() {
     return verbose;
 }
 
-/*
-int clientInstance::connectToRedis(char *ip,int port) {
-    int rc=GENERALERROR;
-
-    data = redisConnect(ip,port);
-    if( data != (redisContext *)NULL ) {
-        if(data->err != 0) {
-            if(verbose) {
-                fprintf(stderr,"Error: %s\n", data->errstr);
-            }
-            rc=REDIS|CONNECTFAIL;
-        } else {
-            redisReply *r;
-            r=(redisReply *)redisCommand(data,"PING");
-            // TODO Check for correct response.
-            freeReplyObject(r);
-            rc=OK;
-        }
-    }
-    return rc;
-}
-*/
 
 int clientInstance::connectToSQLITE() {
     int rc=OK;
     char dbName[255];
 
 
+    // TODO need to be able to add a path to database(s)
+    // Open the global settings, this should be protected by the db file
+    // being RO.
+    //
+    // Now open the client specific dab.
+    //
     strncpy(dbName,nodeName,sizeof(dbName));
     strncat(dbName,".db",  sizeof(dbName));
     rc = sqlite3_open(dbName, &db);
 
     return rc;
 }
-// Connect to database, currently redis only.
+// Connect to database, currently sqlite.
 //
 int clientInstance::connectToDB( int dbType,char *ip, int port ) {
     int rc;
 
     switch(dbType) {
         case REDIS_DB:
-//            rc=connectToRedis(ip,port);
             break;
         case SQLITE_DB:
             rc=connectToSQLITE();
@@ -80,17 +63,6 @@ int clientInstance::connectToDB( int dbType,char *ip, int port ) {
 
     return rc;
 }
-
-
-/*
-redisReply *clientInstance::redisCmd(char *cmd) {
-    redisReply *r;
-
-    r = (redisReply *)redisCommand(data,cmd);
-
-    return r;
-}
-*/
 
 int clientInstance::cmdExit() {
     char cmdBuffer[255];
@@ -211,32 +183,6 @@ int clientInstance::cmdConnect() {
 
 // Get mqtt setting from global database.
 //
-    /*
-    sprintf(cmdBuffer,"HGET fred MQTT_SERVER");
-    r=redisCmd(cmdBuffer);
-
-    if( r->type == REDIS_REPLY_NIL ) {
-        printf("Undefined MQTT_SERVER\n");
-        freeReplyObject(r);
-    }
-
-    if( r->type == REDIS_REPLY_STRING) {
-        memset(address, 0, sizeof( address));
-        memset(port, 0, sizeof( port));
-
-        strncpy(address,r->str,sizeof(address));
-        freeReplyObject(r);
-
-        sprintf(cmdBuffer,"HGET fred MQTT_PORT");
-        r=redisCmd(cmdBuffer);
-        if( r->type == REDIS_REPLY_STRING ) {
-            strncpy(port,r->str,sizeof(port));
-            portNum=atoi(port);
-            rc=OK;
-        }
-        freeReplyObject(r);
-    }
-    */
     mosquitto_lib_init();
 
     mosq = mosquitto_new(nodeName,clean_session,NULL);
@@ -273,29 +219,6 @@ int clientInstance::cmdSub(char *name) {
     char cmdBuffer[255];
     char scratchBuffer[255];
 
-    /*
-    sprintf(cmdBuffer,"HGET %s subscribed",nodeName);
-    r=redisCmd(cmdBuffer);
-
-    if( r->type == REDIS_REPLY_NIL ) {
-        printf("%s undefined\n",name);
-        freeReplyObject(r);
-
-        sprintf(cmdBuffer,"HSET %s subscribed %s",nodeName,name);
-        r=redisCmd(cmdBuffer);
-    } else {
-        printf("%s defined\n",name);
-        memset( scratchBuffer,0,(size_t)sizeof(scratchBuffer));
-        strncpy( scratchBuffer, r->str, (size_t) sizeof(scratchBuffer));
-        freeReplyObject(r);
-        strcat( scratchBuffer, ":" );
-        strcat( scratchBuffer, name );
-        sprintf(cmdBuffer,"HSET %s subscribed %s",nodeName,scratchBuffer);
-        printf("cmdBuffer is %s\n",cmdBuffer);
-        r=redisCmd(cmdBuffer);
-    }
-    */
-
     rc = PARSER|NOTIMPLEMENTED;
 
     return rc;
@@ -309,20 +232,11 @@ void clientInstance::doClearAll() {
     printf("DEBUG:%s\n", cmdBuffer);
     // TODO make sure connected flag is still set.
     //
-    /*
-    sprintf(cmdBuffer,"DEL %s", nodeName);
-    r=redisCmd(cmdBuffer);
-    freeReplyObject(r);
-
-    sprintf(cmdBuffer,"HSET %s connected true",nodeName);
-    r=redisCmd(cmdBuffer);
-    freeReplyObject(r);
-    */
 }
 
 int clientInstance::cmdClear(char *name) {
     char cmdBuffer[255];
-//    redisReply *r;
+
     int rc = OK;
 
     if( name == (char *)NULL) {
@@ -336,18 +250,8 @@ int clientInstance::cmdClear(char *name) {
         sprintf(cmdBuffer,"delete from %s_variables where name='%s'", nodeName,name);
         printf("DEBUG:%s\n", cmdBuffer);
     
-    /*
-        sprintf(cmdBuffer,"HDEL %s %s",nodeName,name);
-        r=redisCmd(cmdBuffer);
-        freeReplyObject(r);
-        */
     }
 
-    // rc = PARSER|NOTIMPLEMENTED;
-
-    // DEL <name>
-    // HSET <name> connected true
-    // 
     return rc;
 }
 
