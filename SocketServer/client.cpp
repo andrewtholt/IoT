@@ -105,14 +105,33 @@ int clientInstance::cmdExit() {
     return rc;
 }
 
-void clientInstance::cmdGet(char *name,char *value) {
+int clientInstance::cmdGet(char *name,char *value) {
     char cmdBuffer[255];
+    char *zErrMsg = 0;
+    int rc;
+    sqlite3_stmt *res;
 
     sprintf(cmdBuffer,"select value from %s_variables where name='%s'", nodeName, name );
-//    r=redisCmd(cmdBuffer);
+    printf("DEBUG:%s\n",cmdBuffer);
+//    rc = sqlite3_exec(db, cmdBuffer, NULL, 0, &zErrMsg);
 
+    rc = sqlite3_prepare(db, cmdBuffer,-1, &res,0);
+    if(rc == 0 ) {
+        rc = OK;
+    } else {
+    }
 
-//    sprintf(value,"OK:%s\n",r->str);
+    rc = sqlite3_step(res);
+    if(rc == SQLITE_ROW) {
+//        printf("DATA:%s\n",sqlite3_column_text(res,0));
+        sprintf(value,"DATA:%s\n",sqlite3_column_text(res,0));
+    } else {
+        fprintf(stderr,"ERROR %s\n",sqlite3_errmsg(db));
+    }
+
+    sqlite3_finalize(res);
+
+    return rc;
 }
 
 int clientInstance::cmdSet(char *name, char *value) {
