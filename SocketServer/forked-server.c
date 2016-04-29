@@ -202,11 +202,10 @@ void usage(char * name) {
     printf("\t-h\t\tHelp.\n");
     printf("\t-v\t\tVerbose.\n");
     printf("\t-p <listen>\tPort that this service listens on.\n");
-    printf("\t-P <redis port>\tPort that Redis listens on.\n");
-    printf("\t-R <redis ip>\tAddress that Redis listens on.\n");
+    printf("\t-P\t\tPath to global database.\n");
     printf("\n");
     printf("Default behaviour is equivalent to:\n");
-    printf("\t%s -p 9090 -R 127.0.0.1 -P 6379\n",name);
+    printf("\t%s -p 9090 -R 127.0.0.1 -P /tmp\n",name);
     printf("\n");
 
 }
@@ -235,10 +234,7 @@ int main(int argc,char *argv[]) {
                 globals.setPort(optarg);
                 break;
             case 'P':   // Port redis listens on
-                globals.setRedisPort(atoi(optarg));
-                break;
-            case 'R':   // Set Redis IP address.
-                globals.setRedisIP( optarg );
+//                globals.setRedisPort(atoi(optarg));
                 break;
             default:
                 break;

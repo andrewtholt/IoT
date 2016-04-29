@@ -6,12 +6,13 @@
 
 globalSettings::globalSettings() {
     verbose=false;
-    redisPort=6379;
 
-    strcpy(redisIp,"127.0.0.1");
+    strcpy(dbPath,"/tmp");
     strcpy(port,"9090");
 
     namePtr=(char *)NULL;
+
+
 }
 
 void globalSettings::display() {
@@ -24,8 +25,8 @@ void globalSettings::display() {
     }
     printf("Port         : %s\n",port);
 
-    printf("Redis Server : %s\n",redisIp);
-    printf("Redis Port   : %d\n",redisPort);
+    printf("DB Path      : %s\n",dbPath);
+//    printf("Redis Port   : %d\n",redisPort);
 
     printf("\n");
 }
@@ -38,20 +39,12 @@ bool globalSettings::getVerbose() {
     return verbose;
 }
 
-void globalSettings::setRedisIP(char *ip) {
-    strcpy(redisIp,ip);
+void globalSettings::setDbPath(char *p) {
+    strcpy(dbPath,p);
 }
 
-char *globalSettings::getRedisIP() {
-    return(redisIp);
-}
-
-void globalSettings::setRedisPort(int p) {
-    redisPort=p;
-}
-
-int globalSettings::getRedisPort() {
-    return redisPort;
+char *globalSettings::getDbPath(void) {
+    return(dbPath);
 }
 
 char *globalSettings::getPort() {

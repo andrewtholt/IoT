@@ -2,8 +2,7 @@
 #ifdef __cplusplus
 class globalSettings {
     bool verbose;
-    int redisPort;
-    char redisIp[32];
+    char dbPath[32];
     char port[8];
     char *namePtr;
 
@@ -15,11 +14,8 @@ class globalSettings {
         void setVerbose(bool flag);
         bool getVerbose();
 
-        void setRedisIP(char *ip);
-        char *getRedisIP();
-
-        void setRedisPort(int p);
-        int getRedisPort();
+        void setDbPath(char *path);
+        char *getDbPath();
 
         void setPort(char *p);
         char *getPort();

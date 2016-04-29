@@ -9,11 +9,10 @@ int main() {
     globals.display();
 
     globals.setVerbose(true);
-    globals.setRedisIP("192.168.100.22");
-    globals.setRedisPort(1234);
+    globals.setDbPath("/var/tmp/");
 
+    printf("dbPath=%s\n",globals.getDbPath());
     globals.display();
 
-    printf("Test RedisIP %s\n",globals.getRedisIP());
 }
 

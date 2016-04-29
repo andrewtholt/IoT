@@ -34,7 +34,7 @@ int clientInstance::connectToSQLITE() {
     // Open the global settings, this should be protected by the db file
     // being RO.
     //
-    // Now open the client specific dab.
+    // Now open the client specific db.
     //
     strncpy(dbName,nodeName,sizeof(dbName));
     strncat(dbName,".db",  sizeof(dbName));
