@@ -14,8 +14,7 @@
 #include <netdb.h>
 #include <stdbool.h>
 #include <stdlib.h>
-
-// #include <hiredis.h>
+#include <sqlite3.h>
 
 #include "helper.h"
 
@@ -220,6 +219,9 @@ int main(int argc,char *argv[]) {
     int reuseaddr = 1; /* True */
 
     int opt;
+    char scratch[255];
+
+    sqlite3 *globalDb;
 
 
     while((opt=getopt(argc,argv,"P:p:R:vh?"))!=-1) {
@@ -246,6 +248,18 @@ int main(int argc,char *argv[]) {
         printf("\n\tSettings\n\n");
         globals.display();
     }
+
+    // 
+    // Globals should be all sorted by now, so lock
+    // them down.
+    //
+    globals.lock();
+
+    sprintf(scratch,"%s/globals.db",globals.getDbPath() );
+    if(globals.getVerbose()) {
+        printf("Globals db %s\n", scratch);
+    }
+
 
     /* Get the address info */
     memset(&hints, 0, sizeof hints);
@@ -297,11 +311,6 @@ int main(int argc,char *argv[]) {
         return 1;
     }
 
-    // 
-    // Globals should be all sorted by now, so lock
-    // them down.
-    //
-    globals.lock();
     /* Main loop */
     while (1) {
         struct sockaddr_in their_addr;
