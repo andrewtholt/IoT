@@ -12,6 +12,7 @@ int main() {
     globals.setDbPath("/var/tmp/");
 
     printf("dbPath=%s\n",globals.getDbPath());
+    globals.lock();
     globals.display();
 
 }

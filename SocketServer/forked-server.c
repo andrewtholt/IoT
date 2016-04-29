@@ -135,6 +135,7 @@ void handleConnection(int newsock) {
     int error=0;
 
     clientInstance client;
+    globals.display();
     /*
     if( (client.connectToDB(SQLITE_DB,globals.getRedisIP(), globals.getRedisPort())) != 0) {
         fprintf(stderr, "FATAL ERROE:Failed to connect to redis at %s:%d\n", globals.getRedisIP(), globals.getRedisPort());
@@ -296,6 +297,11 @@ int main(int argc,char *argv[]) {
         return 1;
     }
 
+    // 
+    // Globals should be all sorted by now, so lock
+    // them down.
+    //
+    globals.lock();
     /* Main loop */
     while (1) {
         struct sockaddr_in their_addr;

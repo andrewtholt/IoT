@@ -15,6 +15,10 @@ globalSettings::globalSettings() {
 
 }
 
+void globalSettings::lock() {
+    locked = true;
+}
+
 void globalSettings::display() {
 
     printf("Verbose      : ");
@@ -24,9 +28,14 @@ void globalSettings::display() {
         printf("False\n");
     }
     printf("Port         : %s\n",port);
-
     printf("DB Path      : %s\n",dbPath);
-//    printf("Redis Port   : %d\n",redisPort);
+    printf("Locked       : ");
+    if(locked) {
+        printf("True");
+    } else {
+        printf("False");
+    }
+
 
     printf("\n");
 }
@@ -40,7 +49,9 @@ bool globalSettings::getVerbose() {
 }
 
 void globalSettings::setDbPath(char *p) {
-    strcpy(dbPath,p);
+    if(!locked) {
+        strcpy(dbPath,p);
+    }
 }
 
 char *globalSettings::getDbPath(void) {
@@ -52,7 +63,9 @@ char *globalSettings::getPort() {
 }
 
 void globalSettings::setPort(char *p) {
-    strncpy(port,p,sizeof(port));
+    if(!locked) {
+        strncpy(port,p,sizeof(port));
+    }
 }
 
 
