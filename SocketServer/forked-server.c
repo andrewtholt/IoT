@@ -15,6 +15,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <sqlite3.h>
+#include <errno.h>
 
 #include "helper.h"
 
@@ -130,17 +131,10 @@ void handleConnection(int newsock) {
     char *ptr;
     char *p1=(char *)NULL;
     char *p2=(char *)NULL;
-//    redisContext *data;
     int error=0;
 
     clientInstance client;
     globals.display();
-    /*
-    if( (client.connectToDB(SQLITE_DB,globals.getRedisIP(), globals.getRedisPort())) != 0) {
-        fprintf(stderr, "FATAL ERROE:Failed to connect to redis at %s:%d\n", globals.getRedisIP(), globals.getRedisPort());
-        exit(1);
-    }
-    */
     /*
      * Get name of client (this will be used to create the client name).
      *
@@ -330,7 +324,7 @@ int main(int argc,char *argv[]) {
             /* In child process */
             close(sock);
             handleConnection(newsock);
-            return 0;
+            return(0) ;
         }
         else {
             /* Parent process */

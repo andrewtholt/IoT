@@ -9,3 +9,5 @@ If client is already connected then exit.
 
 Q: Should lock be in the database, against each client ?
 
+Detect client disconnect and clean up.
+
