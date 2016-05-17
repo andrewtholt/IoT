@@ -283,7 +283,6 @@ int clientInstance::cmdParser(char *cmd,char *reply) {
         } else if(!strcmp(c,"^pub")) {
             p1 = (char *)strtok( NULL, " \r\n");
             p2 = (char *)strtok( NULL, " \r\n");
-
             rc = cmdPub(p1,p2);
         } else if(!strcmp(c,"^connect")) {
             rc = cmdConnect();

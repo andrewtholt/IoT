@@ -19,11 +19,7 @@ class clientInstance {
     sqlite3 *db;        // Connection to this clients database
     sqlite3 *globalSettings; // RO connection to global data.
 
-//    redisContext *data=(redisContext *)NULL;
-
-    int connectToRedis(char *ip, int port);
     int connectToSQLITE();
-//    redisReply *redisCmd(char *cmd);
 
     int cmdSet( char *name, char *value);
     int cmdGet( char *name, char *value);
@@ -42,11 +38,6 @@ class clientInstance {
         void setVerbose(bool);
         bool getVerbose();
 
-        /*
-        int cmdSet( char *name, char *value);
-        char *cmdGet( char *name, int *error);
-        */
-
         int cmdParser(char *cmd, char *result);
 
         int cmdExit();
@@ -54,7 +45,6 @@ class clientInstance {
         int connectToDB(int dbType, char *ip, int port);
 
         bool connected();
-
 
         ~clientInstance();
 };
