@@ -156,7 +156,9 @@ void handleConnection(int newsock) {
         rc=Readline(newsock,(void *)buffer,sizeof(buffer));
 
         if( rc == 0) {
+            // Client disconnected
             runFlag=false;
+            client.cmdExit();
         }
 
         if( rc > 0 ) {

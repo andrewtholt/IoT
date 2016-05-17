@@ -69,6 +69,10 @@ int clientInstance::cmdExit() {
     int rc=0;
     char *zErrMsg = 0;
 
+    if(verbose) {
+        fprintf(stderr,"Disconnecting\n");
+    }
+
     sprintf(cmdBuffer,"drop table if exists %s_variables",nodeName);
     rc = sqlite3_exec(db, cmdBuffer, NULL, 0, &zErrMsg);
     if ( rc == 0) {
