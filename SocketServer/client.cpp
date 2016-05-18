@@ -91,6 +91,9 @@ bool clientInstance::getVerbose() {
 }
 
 
+// This function is idempotent, i.e.
+// It can be called multiple times without ill effect,
+//
 int clientInstance::connectToSQLITE() {
     int rc=OK;
     char dbName[255];
@@ -102,9 +105,14 @@ int clientInstance::connectToSQLITE() {
     //
     // Now open the client specific db.
     //
-    strncpy(dbName,nodeName,sizeof(dbName));
-    strncat(dbName,".db",  sizeof(dbName));
-    rc = sqlite3_open(dbName, &db);
+
+    if( (sqlite3 *)NULL == db) {
+        strncpy(dbName,nodeName,sizeof(dbName));
+        strncat(dbName,".db",  sizeof(dbName));
+        rc = sqlite3_open(dbName, &db);
+    } else {
+        rc=OK;
+    }
 
     return rc;
 }
