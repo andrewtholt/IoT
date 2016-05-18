@@ -194,7 +194,7 @@ void handleConnection(int newsock) {
 }
 
 void usage(char * name) {
-    printf("\nUsage:%s -h|-v|-p <listen> -P <redis port> -R <Redis ip>\n", name);
+    printf("\nUsage:%s -h|-v|-p <listen> -P <database path>\n", name);
     printf("\t-h\t\tHelp.\n");
     printf("\t-v\t\tVerbose.\n");
     printf("\t-p <listen>\tPort that this service listens on.\n");
