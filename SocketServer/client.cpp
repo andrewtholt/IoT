@@ -128,8 +128,9 @@ int clientInstance::cmdSet(char *name, char *value) {
             rc=OK;
         }
 
-    } else {    // if not identified then the only thing I am allowed
-        // to set is NODENAME.
+    } else {
+        // if not identified then the only thing I am allowed to do is set NODENAME.
+        // 
         if(!strcmp(name,"NODENAME")) {
             rc=OK;
             strncpy(nodeName, value,sizeof(nodeName));
@@ -140,6 +141,10 @@ int clientInstance::cmdSet(char *name, char *value) {
             rc = sqlite3_exec(db, cmdBuffer, NULL, 0, &zErrMsg);
             if( 0 == rc) {
                 identified=true;
+                // 
+                // TODO: Ok I'm identified, now connect to the MQTT
+                // server defined in the database.
+                //
             }
         } else {
             rc = DATABASE | NOTCONNECTED;

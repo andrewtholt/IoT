@@ -188,7 +188,7 @@ void handleConnection(int newsock) {
             }
         }
     }
-//    redisCommand(data,"HSET %s connected false", nodeName);
+
     close(newsock);
     exit(0);
 }
