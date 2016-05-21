@@ -18,7 +18,7 @@ class clientInstance {
     char nodeName[255];
     char dbPath[255];
     sqlite3 *db;        // Connection to this clients database
-    sqlite3 *globalSettings; // RO connection to global data.
+    sqlite3 *globalsDatabase; // RO connection to global data.
 
     int connectToSQLITE();
 
@@ -33,6 +33,7 @@ class clientInstance {
     int cmdConnect();  // connect to broker, MQTT in this case
     int cmdLock();
     void doClearAll();
+    int getMap(char *shortName,char *longName);
 
     public:
         clientInstance(char *path);

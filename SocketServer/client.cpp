@@ -14,14 +14,64 @@ void connect_callback(struct mosquitto *mosq, void *obj, int result) {
     printf("Connected %d!\n\n",result);
 }
 
+void disconnect_callback(struct mosquitto *mosq, void *obj, int result) {
+    printf("Disconnected %d!\n\n",result);
+}
+
+// Return the long name in the pointer passed in from the caller.
+//
+int clientInstance::getMap(char *shortName, char *longName) {
+    char sqlCmd[255];
+    int rc=OK;
+
+    sqlite3_stmt *sqlRes;
+    char *zErrMsg = (char *)NULL ; // Pointer to error message, don't forget to free the memory.
+
+    if(!globalsDatabase) {
+        char scratch[255];
+
+        sprintf(scratch,"%s/globals.db",globals.getDbPath());
+        rc = sqlite3_open(scratch,&globalsDatabase);
+        if( rc == 0) {
+            printf("Globals db opened OK.\n");
+        } else {
+            printf("Globals db open FAILED.\n");
+        }
+
+    }
+    sprintf(sqlCmd,"select path from mqtt_map where name = '%s'", shortName);
+
+    if(verbose) {
+        printf("SQL:>%s<\n", sqlCmd);
+    }
+
+    rc = sqlite3_prepare(globalsDatabase, sqlCmd,-1, &sqlRes,0);
+
+    if(rc == 0) {
+        rc = sqlite3_step(sqlRes);
+        if(rc == SQLITE_ROW) {
+            printf("Long version is >%s<\n", sqlite3_column_text(sqlRes,0));
+            strcpy(longName,(char *)sqlite3_column_text(sqlRes,0));
+        }
+    } else {
+        fprintf(stderr,"SQL Error %s\n", sqlite3_errmsg(globalsDatabase));
+//        sqlite3_free(zErrMsg);
+    }
+    return(rc);
+}
+
 clientInstance::clientInstance(char *path) {
 
-    verbose=false;
+    verbose=true;
     identified=false;
     locked=false;
     brokerConnected=false;
 
+    db = (struct sqlite3 *)NULL;
+
     mosq = (struct mosquitto *)NULL;
+
+    globalsDatabase = (struct sqlite3 *)NULL;
 
     strcpy(dbPath,path);
 
@@ -170,13 +220,14 @@ int clientInstance::cmdSet(char *name, char *value) {
             if( 0 == rc) {
                 identified=true;
                 // 
-                // TODO: Ok I'm identified, now connect to the MQTT
+                // Ok I'm identified, now connect to the MQTT
                 // server defined in the database.
                 //
                 mosquitto_lib_init();
                 mosq = mosquitto_new( nodeName, false, (void *)&verbose);
                 if(mosq) {
                     mosquitto_connect_callback_set(mosq, connect_callback);
+                    mosquitto_disconnect_callback_set(mosq, disconnect_callback);
 
                     rc = mosquitto_connect(mosq, globals.getMQTTAddress(), globals.getMQTTPort(), 60);
                     mosquitto_subscribe(mosq, NULL, "#", 0);
@@ -184,6 +235,7 @@ int clientInstance::cmdSet(char *name, char *value) {
                     mosquitto_loop_start( mosq );
                 }
             }
+            rc=OK;
         } else {
             rc = DATABASE | NOTCONNECTED;
         }
@@ -201,7 +253,12 @@ int clientInstance::cmdPub(char *name,char *value) {
 
     int rc = OK;
 
-    rc = PARSER|NOTIMPLEMENTED;
+    char longName[255];
+
+    rc = getMap( name, (char *)&longName );
+
+
+//    rc = PARSER|NOTIMPLEMENTED;
     return rc;
 }
 
@@ -216,7 +273,6 @@ int clientInstance::cmdDump() {
 int clientInstance::cmdConnect() {
 
     char cmdBuffer[255];
-//    redisReply *r;
     char address[32];
     char port[6];
     int portNum=0;
@@ -230,6 +286,7 @@ int clientInstance::cmdConnect() {
 
 // Get mqtt setting from global database.
 //
+    /*
     mosquitto_lib_init();
 
     mosq = mosquitto_new(nodeName,clean_session,NULL);
@@ -256,12 +313,12 @@ int clientInstance::cmdConnect() {
         }
     }
 
-//    rc = PARSER|NOTIMPLEMENTED;
+    */
+    rc = PARSER|NOTIMPLEMENTED;
     return rc;
 }
 
 int clientInstance::cmdSub(char *name) {
-//    redisReply *r;
     int rc = OK;
     char cmdBuffer[255];
     char scratchBuffer[255];

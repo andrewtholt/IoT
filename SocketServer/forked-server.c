@@ -242,8 +242,8 @@ int main(int argc,char *argv[]) {
         }
     }
 
-    // TODO Load settings form globals table.
-    // Load short name maps.
+    // Load settings form globals table.
+    // TODO Load short name maps.
     sprintf(scratch,"%s/globals.db",globals.getDbPath());
     rc = sqlite3_open(scratch,&globalDb);
     if (rc !=0) {
@@ -263,6 +263,9 @@ int main(int argc,char *argv[]) {
             }
         }
     }
+    // Finished with globals database for now, so close it.
+//    sqlite3_close( globalDb );
+
     // 
     // Globals should be all sorted by now, so lock
     // them down.
