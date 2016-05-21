@@ -19,7 +19,7 @@ create table mqtt_settings (
 -- RAM in which to assemble messages.
 --
 create table mqtt_map (
-    name varchar,
+    name varchar unique,
     path varchar
 );
 
@@ -30,4 +30,8 @@ create index mqtt_map_reverse on mqtt_map(path);
 -- Create default entry for MQTT server
 --
 insert into mqtt_settings (id) values (1);
+-- 
+-- Test mapping
+--
+insert into mqtt_map (name,path) values ('TEST_STATE','/home/outside/front/light/state');
 
