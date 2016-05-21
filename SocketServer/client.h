@@ -22,6 +22,8 @@ class clientInstance {
 
     int connectToSQLITE();
 
+    struct mosquitto *mosq;
+
     int cmdSet( char *name, char *value);
     int cmdGet( char *name, char *value);
     int cmdSub(char *name);

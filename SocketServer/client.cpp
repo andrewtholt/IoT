@@ -21,6 +21,8 @@ clientInstance::clientInstance(char *path) {
     locked=false;
     brokerConnected=false;
 
+    mosq = (struct mosquitto *)NULL;
+
     strcpy(dbPath,path);
 
     globals.display();
@@ -82,9 +84,22 @@ int clientInstance::cmdExit() {
     char cmdBuffer[255];
     int rc=0;
     char *zErrMsg = 0;
+    bool force=false;
 
     if(verbose) {
         fprintf(stderr,"Disconnecting\n");
+    }
+
+    if(mosq) {
+        rc=mosquitto_disconnect(mosq);
+
+        if(MOSQ_ERR_SUCCESS == rc ) {
+            force = false;
+        } else {
+            force = true;
+        }
+
+        rc=mosquitto_loop_stop( mosq, force );
     }
 
     sprintf(cmdBuffer,"drop table if exists %s_variables",nodeName);
@@ -127,7 +142,6 @@ int clientInstance::cmdSet(char *name, char *value) {
     int rc=OK;
     char cmdBuffer[255];
     char *zErrMsg = 0;
-    struct mosquitto *mosq;
 
     if(identified) {  // If known can't set NODENAME
 
