@@ -232,8 +232,8 @@ int main(int argc,char *argv[]) {
             case 'p':  // Port that I will listen to.
                 globals.setPort(optarg);
                 break;
-            case 'P':   // Port redis listens on
-//                globals.setRedisPort(atoi(optarg));
+            case 'P':   // Path to databse files
+                globals.setDbPath(optarg);
                 break;
             default:
                 break;
@@ -257,7 +257,8 @@ int main(int argc,char *argv[]) {
     }
 
 
-    /* Get the address info */
+    // Get the address info.
+    //
     memset(&hints, 0, sizeof hints);
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;

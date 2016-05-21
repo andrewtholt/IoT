@@ -5,12 +5,15 @@
 #include "globals.h"
 
 globalSettings::globalSettings() {
+    // 
+    // Set defaults.
+    //
     verbose=false;
 
     strcpy(dbPath,"/tmp");
     strcpy(port,"9090");
 
-    namePtr=(char *)NULL;
+//    namePtr=(char *)NULL;
 
 
 }
