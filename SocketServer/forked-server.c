@@ -244,6 +244,8 @@ int main(int argc,char *argv[]) {
         printf("\n\tSettings\n\n");
         globals.display();
     }
+    // TODO Load settings form globals table.
+    // Load short name maps.
 
     // 
     // Globals should be all sorted by now, so lock
