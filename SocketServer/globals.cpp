@@ -13,9 +13,8 @@ globalSettings::globalSettings() {
     strcpy(dbPath,"/tmp");
     strcpy(port,"9090");
 
-//    namePtr=(char *)NULL;
-
-
+    strcpy(mqtt_ip,"127.0.0.1");
+    mqtt_port=1883;
 }
 
 void globalSettings::lock() {
@@ -32,6 +31,11 @@ void globalSettings::display() {
     }
     printf("Port         : %s\n",port);
     printf("DB Path      : %s\n",dbPath);
+
+    printf("==== MQTT ====\n");
+    printf("MQTT IP      : %s\n",mqtt_ip);
+    printf("MQTT Port    : %d\n",mqtt_port);
+
     printf("Locked       : ");
     if(locked) {
         printf("True");
@@ -39,7 +43,8 @@ void globalSettings::display() {
         printf("False");
     }
 
-
+    printf("\n");
+    printf("==============\n");
     printf("\n");
 }
 
@@ -71,4 +76,23 @@ void globalSettings::setPort(char *p) {
     }
 }
 
+void globalSettings::setMQTTAddress(char *addr) {
+    if(!locked) {
+        strncpy(mqtt_ip,addr,sizeof(mqtt_ip));
+    }
+}
+
+void globalSettings::setMQTTPort(char *port) {
+    if(!locked) {
+        mqtt_port=atoi(port);
+    }
+}
+
+char *globalSettings::getMQTTAddress() {
+    return(mqtt_ip);
+}
+
+int globalSettings::getMQTTPort() {
+    return(mqtt_port);
+}
 

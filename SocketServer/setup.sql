@@ -35,3 +35,5 @@ insert into mqtt_settings (id) values (1);
 --
 insert into mqtt_map (name,path) values ('TEST_STATE','/home/outside/front/light/state');
 
+-- delete from mqtt_settings;
+-- insert into mqtt_settings (address,port ) values ('192.168.100.1',1234 );

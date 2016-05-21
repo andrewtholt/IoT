@@ -1,12 +1,17 @@
 #include <stdbool.h>
+#include <stdlib.h>
 
 #ifdef __cplusplus
 class globalSettings {
     bool verbose;
     char dbPath[32];
     char port[8];
-    char *namePtr;
+//    char *namePtr;
     bool locked=false;
+    // MQTT settings, loaded from database.
+    //
+    char mqtt_ip[17]; // IP Address
+    int mqtt_port;
 
     public:
 
@@ -22,5 +27,11 @@ class globalSettings {
 
         void setPort(char *p);
         char *getPort();
+
+        void setMQTTAddress(char *addr);
+        void setMQTTPort(char *addr);
+
+        char *getMQTTAddress();
+        int getMQTTPort();
 };
 #endif

@@ -16,6 +16,7 @@ class clientInstance {
     char inBuffer[255];
     char outBuffer[255];
     char nodeName[255];
+    char dbPath[255];
     sqlite3 *db;        // Connection to this clients database
     sqlite3 *globalSettings; // RO connection to global data.
 
@@ -32,7 +33,7 @@ class clientInstance {
     void doClearAll();
 
     public:
-        clientInstance();
+        clientInstance(char *path);
         void display(void);
 
         void setVerbose(bool);

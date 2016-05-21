@@ -2,15 +2,29 @@
 #include <stdbool.h>
 #include <string.h>
 #include <sqlite3.h>
+#include <mosquitto.h>
 
 #include "client.h"
 #include "errors.h"
+#include "globals.h"
 
-clientInstance::clientInstance() {
+extern globalSettings globals;
+
+void connect_callback(struct mosquitto *mosq, void *obj, int result) {
+    printf("Connected %d!\n\n",result);
+}
+
+clientInstance::clientInstance(char *path) {
+
     verbose=false;
     identified=false;
     locked=false;
     brokerConnected=false;
+
+    strcpy(dbPath,path);
+
+    globals.display();
+
 }
 
 clientInstance::~clientInstance() {
@@ -99,7 +113,6 @@ int clientInstance::cmdGet(char *name,char *value) {
 
     rc = sqlite3_step(res);
     if(rc == SQLITE_ROW) {
-//        printf("DATA:%s\n",sqlite3_column_text(res,0));
         sprintf(value,"DATA:%s\n",sqlite3_column_text(res,0));
     } else {
         fprintf(stderr,"ERROR %s\n",sqlite3_errmsg(db));
@@ -114,6 +127,7 @@ int clientInstance::cmdSet(char *name, char *value) {
     int rc=OK;
     char cmdBuffer[255];
     char *zErrMsg = 0;
+    struct mosquitto *mosq;
 
     if(identified) {  // If known can't set NODENAME
 
@@ -145,6 +159,16 @@ int clientInstance::cmdSet(char *name, char *value) {
                 // TODO: Ok I'm identified, now connect to the MQTT
                 // server defined in the database.
                 //
+                mosquitto_lib_init();
+                mosq = mosquitto_new( nodeName, false, (void *)&verbose);
+                if(mosq) {
+                    mosquitto_connect_callback_set(mosq, connect_callback);
+
+                    rc = mosquitto_connect(mosq, globals.getMQTTAddress(), globals.getMQTTPort(), 60);
+                    mosquitto_subscribe(mosq, NULL, "#", 0);
+
+                    mosquitto_loop_start( mosq );
+                }
             }
         } else {
             rc = DATABASE | NOTCONNECTED;

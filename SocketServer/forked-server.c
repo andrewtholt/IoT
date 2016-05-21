@@ -73,47 +73,47 @@ void errorMessage(int rc,char *msg) {
 // RETURN: redis context.
 //
 /*
-redisContext *connectToRedis(char *ip, int port, char *name, int *rc) {
-    redisContext *c;
-    redisReply *r;
-    redisReply *r1;
+   redisContext *connectToRedis(char *ip, int port, char *name, int *rc) {
+   redisContext *c;
+   redisReply *r;
+   redisReply *r1;
 
-    c = redisConnect(ip,port);
-    if( c!=NULL && c->err) {
-        fprintf(stderr,"Error: %s\n", c->errstr);
-        *rc = REDIS | CONNECTFAIL;
-        return ((redisContext *)NULL);
-    }
+   c = redisConnect(ip,port);
+   if( c!=NULL && c->err) {
+   fprintf(stderr,"Error: %s\n", c->errstr);
+ *rc = REDIS | CONNECTFAIL;
+ return ((redisContext *)NULL);
+ }
 
-    r=(redisReply *)redisCommand(c,"PING");
-    freeReplyObject(r);
+ r=(redisReply *)redisCommand(c,"PING");
+ freeReplyObject(r);
 
-    r = (redisReply *)redisCommand(c,"HMGET %s connected",name);
-    printf("Reply=%s\n", r->element[0]->str);
+ r = (redisReply *)redisCommand(c,"HMGET %s connected",name);
+ printf("Reply=%s\n", r->element[0]->str);
 
-    if( !r->element[0]->str ) {  // if name not found
-        *rc=REDIS|UNKNOWN;
-        c=((redisContext *)NULL);
-        freeReplyObject(r);
-        return(c);
-    }
+ if( !r->element[0]->str ) {  // if name not found
+ *rc=REDIS|UNKNOWN;
+ c=((redisContext *)NULL);
+ freeReplyObject(r);
+ return(c);
+ }
 
-    if( !strcmp(r->element[0]->str,"false")) { // Not connected
-        r1 = (redisReply *)redisCommand(c,"HSET %s connected true",name);
-        freeReplyObject(r1);
-        *rc=0;
-    } else {
-        *rc = REDIS | CONNECTFAIL;
-        redisFree(c);
-        c=((redisContext *)NULL);
-    }
-    freeReplyObject(r);
-    globals.display();
+ if( !strcmp(r->element[0]->str,"false")) { // Not connected
+ r1 = (redisReply *)redisCommand(c,"HSET %s connected true",name);
+ freeReplyObject(r1);
+ *rc=0;
+ } else {
+ *rc = REDIS | CONNECTFAIL;
+ redisFree(c);
+ c=((redisContext *)NULL);
+ }
+ freeReplyObject(r);
+ globals.display();
 
-    *rc=0;
-    return(c);
-}
-*/
+ *rc=0;
+ return(c);
+ }
+ */
 /*
  * ATH:  This is where the real work is done.
  */
@@ -133,7 +133,7 @@ void handleConnection(int newsock) {
     char *p2=(char *)NULL;
     int error=0;
 
-    clientInstance client;
+    clientInstance client(globals.getDbPath());
     globals.display();
     /*
      * Get name of client (this will be used to create the client name).
@@ -172,19 +172,19 @@ void handleConnection(int newsock) {
                     runFlag=false;
                 }
                 /*
-                switch(err) {
-                    case OK:
-                        Writeline(newsock,outBuffer,strlen(outBuffer));
-                        break;
-                    case CLIENTEXIT:
-                        runFlag = false;
-                        break;
-                    default:
-                        sprintf(outBuffer,"ERROR:0x%02x\n", err);
-                        Writeline(newsock,outBuffer,strlen(outBuffer));
-                        break;
-                }
-                */
+                   switch(err) {
+                   case OK:
+                   Writeline(newsock,outBuffer,strlen(outBuffer));
+                   break;
+                   case CLIENTEXIT:
+                   runFlag = false;
+                   break;
+                   default:
+                   sprintf(outBuffer,"ERROR:0x%02x\n", err);
+                   Writeline(newsock,outBuffer,strlen(outBuffer));
+                   break;
+                   }
+                   */
             }
         }
     }
@@ -218,6 +218,8 @@ int main(int argc,char *argv[]) {
     char scratch[255];
 
     sqlite3 *globalDb;
+    sqlite3_stmt *sqlRes;
+    int rc;
 
 
     while((opt=getopt(argc,argv,"P:p:R:vh?"))!=-1) {
@@ -240,18 +242,37 @@ int main(int argc,char *argv[]) {
         }
     }
 
-    if(globals.getVerbose()) {
-        printf("\n\tSettings\n\n");
-        globals.display();
-    }
     // TODO Load settings form globals table.
     // Load short name maps.
+    sprintf(scratch,"%s/globals.db",globals.getDbPath());
+    rc = sqlite3_open(scratch,&globalDb);
+    if (rc !=0) {
+        fprintf(stderr,"No globals database at %s defaults in place.\n",scratch);
+    } else {
+        sprintf(scratch,"select address,port from mqtt_settings limit 1");
 
+        if(globals.getVerbose()) {
+            printf("sql >%s<\n",scratch);
+        }
+        rc = sqlite3_prepare(globalDb,scratch,-1,&sqlRes,0);
+        if (rc == 0 ) {
+            rc = sqlite3_step(sqlRes);
+            if(rc == SQLITE_ROW) {
+                globals.setMQTTAddress( (char *)sqlite3_column_text(sqlRes,0) );
+                globals.setMQTTPort( (char *)sqlite3_column_text(sqlRes,1) );
+            }
+        }
+    }
     // 
     // Globals should be all sorted by now, so lock
     // them down.
     //
+
     globals.lock();
+    if(globals.getVerbose()) {
+        printf("\n\tSettings\n\n");
+        globals.display();
+    }
 
     sprintf(scratch,"%s/globals.db",globals.getDbPath() );
     if(globals.getVerbose()) {
