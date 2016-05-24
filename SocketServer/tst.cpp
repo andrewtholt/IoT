@@ -9,7 +9,7 @@ int main() {
     globals.display();
 
     globals.setVerbose(true);
-    globals.setDbPath("/var/tmp/");
+    globals.setDbPath((char *)"/var/tmp/");
 
     printf("dbPath=%s\n",globals.getDbPath());
     globals.lock();
