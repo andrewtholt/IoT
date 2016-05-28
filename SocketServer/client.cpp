@@ -55,7 +55,7 @@ int clientInstance::getMap(char *shortName, char *longName) {
         }
     } else {
         fprintf(stderr,"SQL Error %s\n", sqlite3_errmsg(globalsDatabase));
-//        sqlite3_free(zErrMsg);
+        //        sqlite3_free(zErrMsg);
     }
     return(rc);
 }
@@ -176,7 +176,7 @@ int clientInstance::cmdGet(char *name,char *value) {
 
     sprintf(cmdBuffer,"select value from %s_variables where name='%s'", nodeName, name );
     printf("DEBUG:%s\n",cmdBuffer);
-//    rc = sqlite3_exec(db, cmdBuffer, NULL, 0, &zErrMsg);
+    //    rc = sqlite3_exec(db, cmdBuffer, NULL, 0, &zErrMsg);
 
     rc = sqlite3_prepare(db, cmdBuffer,-1, &res,0);
     if(rc == 0 ) {
@@ -207,9 +207,9 @@ int clientInstance::cmdSet(char *name, char *value) {
             sprintf(cmdBuffer,"replace into %s_variables (name,value) values ('%s','%s')", nodeName,name,value);
             printf("DEBUG:%s\n",cmdBuffer);
             rc = sqlite3_exec(db, cmdBuffer, NULL, 0, &zErrMsg);
-        // 
-        // TODO check for errors
-        //
+            // 
+            // TODO check for errors
+            //
         } else {
             rc=OK;
         }
@@ -231,19 +231,8 @@ int clientInstance::cmdSet(char *name, char *value) {
                 // Ok I'm identified, now connect to the MQTT
                 // server defined in the database.
                 //
-                mosquitto_lib_init();
-                mosq = mosquitto_new( nodeName, false, (void *)&verbose);
-                if(mosq) {
-                    mosquitto_connect_callback_set(mosq, connect_callback);
-                    mosquitto_disconnect_callback_set(mosq, disconnect_callback);
-
-                    rc = mosquitto_connect(mosq, globals.getMQTTAddress(), globals.getMQTTPort(), 60);
-                    mosquitto_subscribe(mosq, NULL, "#", 0);
-
-                    mosquitto_loop_start( mosq );
-                }
+                rc=cmdConnect();
             }
-            rc=OK;
         } else {
             rc = DATABASE | NOTCONNECTED;
         }
@@ -266,7 +255,7 @@ int clientInstance::cmdPub(char *name,char *value) {
     rc = getMap( name, (char *)&longName );
 
 
-//    rc = PARSER|NOTIMPLEMENTED;
+    //    rc = PARSER|NOTIMPLEMENTED;
     return rc;
 }
 
@@ -292,37 +281,33 @@ int clientInstance::cmdConnect() {
 
     bool clean_session = false; // TODO What?
 
-// Get mqtt setting from global database.
-//
-    /*
     mosquitto_lib_init();
+    mosq = mosquitto_new( nodeName, false, (void *)&verbose);
 
-    mosq = mosquitto_new(nodeName,clean_session,NULL);
+    if(mosq) {
+        mosquitto_connect_callback_set(mosq, connect_callback);
+        mosquitto_disconnect_callback_set(mosq, disconnect_callback);
 
-    if(!mosq) {
-        printf("MQTT ERROR\n");
-    } else {
-        mosqRc = mosquitto_connect(mosq,address,portNum,keepalive);
-        printf("%s\n",mosquitto_strerror( mosqRc ));
-
-        switch( mosqRc ) {
+        rc = mosquitto_connect(mosq, globals.getMQTTAddress(), globals.getMQTTPort(), 60);
+        switch(rc) {
             case MOSQ_ERR_SUCCESS:
-                rc=OK;
+                mosquitto_subscribe(mosq, NULL, "#", 0);
+                mosquitto_loop_start( mosq );
+                rc =  MQTT_OK;
                 break;
             case MOSQ_ERR_INVAL:
-                rc=-1;  // TODO Replace with a meaningful value
+                rc = MQTT|INVALID_PARAMS;
                 break;
             case MOSQ_ERR_ERRNO:
-                rc = -2; // TODO Replace with a meaningful value
+                rc = MQTT|CHECK_ERRNO;
                 break;
             default:
-                rc = -3; // TODO Replace with a meaningful value
+                rc=GENERALERROR;
                 break;
         }
+
     }
 
-    */
-    rc = PARSER|NOTIMPLEMENTED;
     return rc;
 }
 
@@ -338,7 +323,7 @@ int clientInstance::cmdSub(char *name) {
 
 void clientInstance::doClearAll() {
     char cmdBuffer[255];
-//    redisReply *r;
+    //    redisReply *r;
 
     sprintf(cmdBuffer,"delete from %s_variables", nodeName);
     printf("DEBUG:%s\n", cmdBuffer);
@@ -361,7 +346,7 @@ int clientInstance::cmdClear(char *name) {
     } else {
         sprintf(cmdBuffer,"delete from %s_variables where name='%s'", nodeName,name);
         printf("DEBUG:%s\n", cmdBuffer);
-    
+
     }
 
     return rc;
