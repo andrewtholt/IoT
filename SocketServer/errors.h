@@ -1,7 +1,10 @@
 
 #ifndef __MY_ERRORS
 #define __MY_ERRORS
-
+// 
+// Errors are defined, implicitly, as a 16 bit value.
+// High byte is the facility, lo the error.
+// If something is common across facilities use the same number, e.g. OK=0
 #define OK 0
 #define CLIENTEXIT 0xff // not realy an error, just convenient.
 

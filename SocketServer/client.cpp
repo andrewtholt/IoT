@@ -399,7 +399,9 @@ int clientInstance::cmdParser(char *cmd,char *reply) {
 
     }
     switch(rc) {
-        case OK:
+        case PARSER_OK:
+        case MQTT_OK:
+        case DATABASE_OK:
             if(strlen(reply) == 0) {
                 sprintf(reply,"OK\n");
             }
