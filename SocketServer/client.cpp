@@ -231,6 +231,9 @@ int clientInstance::cmdSet(char *name, char *value) {
                 // Ok I'm identified, now connect to the MQTT
                 // server defined in the database.
                 //
+                // TODO Add config variable 'AUTOCONNECT' if set, then
+                // connect, otherwise need an explicit connect command.
+                //
                 rc=cmdConnect();
             }
         } else {
