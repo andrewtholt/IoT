@@ -11,3 +11,6 @@ Q: Should lock be in the database, against each client ?
 
 Detect client disconnect and clean up.
 
+
+I need to get the network socket into the message callback, somehow.
+
