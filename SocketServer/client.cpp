@@ -18,6 +18,12 @@ void disconnect_callback(struct mosquitto *mosq, void *obj, int result) {
     printf("Disconnected %d!\n\n",result);
 }
 
+void message_callback(struct mosquitto *mosq, void *obj, const struct mosquitto_message *message) {
+    printf("You have a message:\n");
+    printf("\t%s\n", message->topic);
+    printf("\t%s\n", message->payload);
+}
+
 // Return the long name in the pointer passed in from the caller.
 //
 int clientInstance::getMap(char *shortName, char *longName) {
@@ -52,10 +58,13 @@ int clientInstance::getMap(char *shortName, char *longName) {
         if(rc == SQLITE_ROW) {
             printf("Long version is >%s<\n", sqlite3_column_text(sqlRes,0));
             strcpy(longName,(char *)sqlite3_column_text(sqlRes,0));
+
+            rc=DATABASE_OK;
         }
     } else {
         fprintf(stderr,"SQL Error %s\n", sqlite3_errmsg(globalsDatabase));
         //        sqlite3_free(zErrMsg);
+        rc=DATABASE|GENERALERROR;
     }
     return(rc);
 }
@@ -252,13 +261,41 @@ int clientInstance::cmdLock() {
 int clientInstance::cmdPub(char *name,char *value) {
 
     int rc = OK;
+    int mosqRc=0;
+    int qos=1; // At least once.
+    bool retain=true;
 
     char longName[255];
 
     rc = getMap( name, (char *)&longName );
 
+    if(DATABASE_OK == rc) {
+        rc=mosquitto_publish( mosq, &mosqRc, longName, strlen(value)+1, (void *)value, qos, retain);
+
+
+    } else {
+    }
+
 
     //    rc = PARSER|NOTIMPLEMENTED;
+    return rc;
+}
+
+int clientInstance::cmdSub(char *name) {
+    int rc = OK;
+    
+    int mosqRc=0;
+    int qos=1; // At least once.
+    char longName[255];
+
+    rc = getMap( name, (char *)&longName );
+    if(DATABASE_OK == rc) {
+        rc=mosquitto_subscribe(mosq,&mosqRc,longName,qos);
+    } else {
+    }
+
+//    rc = PARSER|NOTIMPLEMENTED;
+
     return rc;
 }
 
@@ -280,7 +317,7 @@ int clientInstance::cmdConnect() {
     int mosqRc=-1;
 
     int rc = 0x100;
-    struct mosquitto *mosq = NULL;
+//    struct mosquitto *mosq = NULL;
 
     bool clean_session = false; // TODO What?
 
@@ -290,6 +327,7 @@ int clientInstance::cmdConnect() {
     if(mosq) {
         mosquitto_connect_callback_set(mosq, connect_callback);
         mosquitto_disconnect_callback_set(mosq, disconnect_callback);
+        mosquitto_message_callback_set(mosq, message_callback);
 
         rc = mosquitto_connect(mosq, globals.getMQTTAddress(), globals.getMQTTPort(), 60);
         switch(rc) {
@@ -310,16 +348,6 @@ int clientInstance::cmdConnect() {
         }
 
     }
-
-    return rc;
-}
-
-int clientInstance::cmdSub(char *name) {
-    int rc = OK;
-    char cmdBuffer[255];
-    char scratchBuffer[255];
-
-    rc = PARSER|NOTIMPLEMENTED;
 
     return rc;
 }

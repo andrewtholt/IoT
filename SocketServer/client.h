@@ -33,6 +33,8 @@ class clientInstance {
     int cmdConnect();  // connect to broker, MQTT in this case
     int cmdLock();
     void doClearAll();
+    // 
+    // Look up shortname, and return full MQTT path
     int getMap(char *shortName,char *longName);
 
     public:
