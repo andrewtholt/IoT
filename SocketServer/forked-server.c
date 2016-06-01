@@ -153,6 +153,9 @@ void handleConnection(int newsock) {
         memset( buffer, (int) 0, sizeof(buffer));
         memset( outBuffer, (int) 0, sizeof(outBuffer));
 
+        // TODO If newsock is an attribute of client instance can
+        // mosquitto callback see it ?
+        //
         rc=Readline(newsock,(void *)buffer,sizeof(buffer));
 
         if( rc == 0) {
