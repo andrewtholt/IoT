@@ -21,7 +21,7 @@ void disconnect_callback(struct mosquitto *mosq, void *obj, int result) {
 void message_callback(struct mosquitto *mosq, void *obj, const struct mosquitto_message *message) {
     printf("You have a message:\n");
     printf("\t%s\n", message->topic);
-    printf("\t%s\n", message->payload);
+    printf("\t%s\n", (char *)message->payload);
 }
 
 // Return the long name in the pointer passed in from the caller.
