@@ -38,7 +38,7 @@ class clientInstance {
     int getMap(char *shortName,char *longName);
 
     public:
-        clientInstance(char *path);
+        clientInstance(char *path, int s);
         void display(void);
 
         void setVerbose(bool);

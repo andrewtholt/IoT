@@ -9,6 +9,7 @@
 #include "globals.h"
 
 extern globalSettings globals;
+int mySocket;
 
 void connect_callback(struct mosquitto *mosq, void *obj, int result) {
     printf("Connected %d!\n\n",result);
@@ -22,6 +23,8 @@ void message_callback(struct mosquitto *mosq, void *obj, const struct mosquitto_
     printf("You have a message:\n");
     printf("\t%s\n", message->topic);
     printf("\t%s\n", (char *)message->payload);
+    printf("mySocket:%d\n", mySocket);
+    printf("This    :%d\n", this);
 }
 
 // Return the long name in the pointer passed in from the caller.
@@ -69,13 +72,15 @@ int clientInstance::getMap(char *shortName, char *longName) {
     return(rc);
 }
 
-clientInstance::clientInstance(char *path) {
+clientInstance::clientInstance(char *path, int s) {
 
     verbose=true;
     identified=false;
     locked=false;
     brokerConnected=false;
+    mySocket = s;
 
+    printf("Socket passed in %d\n",s);
     db = (struct sqlite3 *)NULL;
 
     mosq = (struct mosquitto *)NULL;
@@ -307,6 +312,7 @@ int clientInstance::cmdDump() {
     return rc;
 }
 
+
 int clientInstance::cmdConnect() {
 
     char cmdBuffer[255];
@@ -317,6 +323,7 @@ int clientInstance::cmdConnect() {
     int mosqRc=-1;
 
     int rc = 0x100;
+
 //    struct mosquitto *mosq = NULL;
 
     bool clean_session = false; // TODO What?

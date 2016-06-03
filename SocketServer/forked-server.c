@@ -133,7 +133,7 @@ void handleConnection(int newsock) {
     char *p2=(char *)NULL;
     int error=0;
 
-    clientInstance client(globals.getDbPath());
+    clientInstance client(globals.getDbPath(),newsock);
     globals.display();
     /*
      * Get name of client (this will be used to create the client name).
@@ -145,9 +145,6 @@ void handleConnection(int newsock) {
      *
      * wait for destination and message.
      */
-    // 
-    // TODO: If client disconnects  run redis command to set connected to false.
-    //
     while(runFlag) {
 
         memset( buffer, (int) 0, sizeof(buffer));
