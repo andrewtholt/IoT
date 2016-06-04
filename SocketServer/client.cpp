@@ -7,9 +7,33 @@
 #include "client.h"
 #include "errors.h"
 #include "globals.h"
+#include "helper.h"
 
 extern globalSettings globals;
+extern struct map *head;
+
 int mySocket;
+
+// 
+// Search for longname in list,
+// Return shortname, or NULL if not found.
+//
+char *listMatchLong(char *name) {
+    struct map *ptr;
+    char *result=(char *)NULL;
+
+    ptr=head;
+
+    do {
+        if(!strcmp( ptr->longName, name)) {
+            return(ptr->shortName);
+        }
+
+        ptr=ptr->next;
+    } while( ptr );
+
+    return((char *)NULL);
+}
 
 void connect_callback(struct mosquitto *mosq, void *obj, int result) {
     printf("Connected %d!\n\n",result);
@@ -25,10 +49,18 @@ void subscribe_callback( struct mosquitto *mosq, void *obj, int mid, int qos_cou
 }
 
 void message_callback(struct mosquitto *mosq, void *obj, const struct mosquitto_message *message) {
+    char *name;
+    char scratch[255];
+
     printf("You have a message:\n");
     printf("\t%s\n", message->topic);
+    name = listMatchLong( message->topic );
     printf("\t%s\n", (char *)message->payload);
     printf("mySocket:%d\n", mySocket);
+    printf("Test %s\n", name);
+
+    sprintf(scratch,"^set %s %s\n", (char *)name, (char *)message->payload);
+    Writeline(mySocket, (void *)scratch, strlen(scratch));
 }
 
 // Return the long name in the pointer passed in from the caller.
@@ -344,7 +376,7 @@ int clientInstance::cmdConnect() {
         rc = mosquitto_connect(mosq, globals.getMQTTAddress(), globals.getMQTTPort(), 60);
         switch(rc) {
             case MOSQ_ERR_SUCCESS:
-                mosquitto_subscribe(mosq, NULL, "#", 0);
+//                mosquitto_subscribe(mosq, NULL, "#", 0);
                 mosquitto_loop_start( mosq );
                 rc =  MQTT_OK;
                 break;

@@ -5,6 +5,12 @@
 #define REDIS_DB 1
 #define SQLITE_DB 2
 
+struct map {
+    char shortName[32];
+    char longName[255];
+    struct map *next;
+};
+
 #ifdef __cplusplus
 
 class clientInstance {
