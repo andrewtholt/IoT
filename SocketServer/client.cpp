@@ -52,12 +52,12 @@ void message_callback(struct mosquitto *mosq, void *obj, const struct mosquitto_
     char *name;
     char scratch[255];
 
-    printf("You have a message:\n");
-    printf("\t%s\n", message->topic);
+//    printf("You have a message:\n");
+//    printf("\t%s\n", message->topic);
     name = listMatchLong( message->topic );
-    printf("\t%s\n", (char *)message->payload);
-    printf("mySocket:%d\n", mySocket);
-    printf("Test %s\n", name);
+//    printf("\t%s\n", (char *)message->payload);
+//     printf("mySocket:%d\n", mySocket);
+//    printf("Test %s\n", name);
 
     sprintf(scratch,"^set %s %s\n", (char *)name, (char *)message->payload);
     Writeline(mySocket, (void *)scratch, strlen(scratch));
