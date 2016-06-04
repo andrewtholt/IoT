@@ -39,6 +39,10 @@ class clientInstance {
 
     public:
         clientInstance(char *path, int s);
+    // 
+    // Message call back.
+    //
+
         void display(void);
 
         void setVerbose(bool);

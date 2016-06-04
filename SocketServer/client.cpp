@@ -19,12 +19,16 @@ void disconnect_callback(struct mosquitto *mosq, void *obj, int result) {
     printf("Disconnected %d!\n\n",result);
 }
 
+void subscribe_callback( struct mosquitto *mosq, void *obj, int mid, int qos_count, const int *granted_qos) {
+    printf("Subscribe\n");
+    printf("mySocket:%d\n", mySocket);
+}
+
 void message_callback(struct mosquitto *mosq, void *obj, const struct mosquitto_message *message) {
     printf("You have a message:\n");
     printf("\t%s\n", message->topic);
     printf("\t%s\n", (char *)message->payload);
     printf("mySocket:%d\n", mySocket);
-    printf("This    :%d\n", this);
 }
 
 // Return the long name in the pointer passed in from the caller.
@@ -335,6 +339,7 @@ int clientInstance::cmdConnect() {
         mosquitto_connect_callback_set(mosq, connect_callback);
         mosquitto_disconnect_callback_set(mosq, disconnect_callback);
         mosquitto_message_callback_set(mosq, message_callback);
+        mosquitto_subscribe_callback_set(mosq, subscribe_callback);
 
         rc = mosquitto_connect(mosq, globals.getMQTTAddress(), globals.getMQTTPort(), 60);
         switch(rc) {
@@ -360,7 +365,7 @@ int clientInstance::cmdConnect() {
 }
 
 void clientInstance::doClearAll() {
-    char cmdBuffer[255];
+    char cmdBuffer[256];
     //    redisReply *r;
 
     sprintf(cmdBuffer,"delete from %s_variables", nodeName);
