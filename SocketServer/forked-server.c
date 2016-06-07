@@ -133,7 +133,7 @@ void handleConnection(int newsock) {
     char *p2=(char *)NULL;
     int error=0;
 
-    clientInstance client(globals.getDbPath());
+    clientInstance client(globals.getDbPath(),newsock);
     globals.display();
     /*
      * Get name of client (this will be used to create the client name).
@@ -145,9 +145,6 @@ void handleConnection(int newsock) {
      *
      * wait for destination and message.
      */
-    // 
-    // TODO: If client disconnects  run redis command to set connected to false.
-    //
     while(runFlag) {
 
         memset( buffer, (int) 0, sizeof(buffer));
@@ -208,6 +205,9 @@ void usage(char * name) {
     printf("\n");
 
 }
+
+struct map *head;
+
 int main(int argc,char *argv[]) {
     bool verbose=false;
 
@@ -244,9 +244,10 @@ int main(int argc,char *argv[]) {
                 break;
         }
     }
-
+    // 
     // Load settings form globals table.
     // TODO Load short name maps.
+    // 
     sprintf(scratch,"%s/globals.db",globals.getDbPath());
     rc = sqlite3_open(scratch,&globalDb);
     if (rc !=0) {
@@ -266,13 +267,50 @@ int main(int argc,char *argv[]) {
             }
         }
     }
+    // Read maps into a linked list, this will be search 'brute force'
+    // by the client.
+    // TODO SIGHUP to parent process forces the destruction of 
+    // the current list, and a new one to be created.  Connected children 
+    // will be unaffected until they disconnect and re-connect.
+    //
     // Finished with globals database for now, so close it.
-//    sqlite3_close( globalDb );
-
     // 
     // Globals should be all sorted by now, so lock
     // them down.
     //
+
+    sprintf(scratch,"select name,path from mqtt_map;");
+    rc = sqlite3_prepare(globalDb,scratch,-1,&sqlRes,0);
+
+    if (rc == 0 ) {
+        struct map *ptr;
+        struct map *tmp;
+        do {
+            rc = sqlite3_step(sqlRes);
+            if(rc == SQLITE_ROW) {
+                printf("Short:%s\n",(char *)sqlite3_column_text(sqlRes,0));
+                printf("Long :%s\n",(char *)sqlite3_column_text(sqlRes,1));
+
+                ptr=(struct map *)malloc( sizeof(struct map));
+                if( (struct map *)NULL == ptr) {
+                    fprintf(stderr, "Fatal error, failed to allocate space for map\n\n");
+                    exit(128);
+                }
+
+                ptr->next=(struct map *)NULL;
+                if( (struct map *)NULL == head) {
+                    head = ptr;
+                } else {
+                    tmp = head;
+                    head = ptr;
+                    ptr->next = tmp;
+                }
+
+                strncpy(ptr->shortName,(char *)sqlite3_column_text(sqlRes,0),sizeof(ptr->shortName));
+                strncpy(ptr->longName,(char *)sqlite3_column_text(sqlRes,1),sizeof(ptr->longName));
+            }
+        } while(rc == SQLITE_ROW);
+    }
 
     globals.lock();
     if(globals.getVerbose()) {
@@ -284,8 +322,7 @@ int main(int argc,char *argv[]) {
     if(globals.getVerbose()) {
         printf("Globals db %s\n", scratch);
     }
-
-
+    //
     // Get the address info.
     //
     memset(&hints, 0, sizeof hints);

@@ -7,8 +7,33 @@
 #include "client.h"
 #include "errors.h"
 #include "globals.h"
+#include "helper.h"
 
 extern globalSettings globals;
+extern struct map *head;
+
+int mySocket;
+
+// 
+// Search for longname in list,
+// Return shortname, or NULL if not found.
+//
+char *listMatchLong(char *name) {
+    struct map *ptr;
+    char *result=(char *)NULL;
+
+    ptr=head;
+
+    do {
+        if(!strcmp( ptr->longName, name)) {
+            return(ptr->shortName);
+        }
+
+        ptr=ptr->next;
+    } while( ptr );
+
+    return((char *)NULL);
+}
 
 void connect_callback(struct mosquitto *mosq, void *obj, int result) {
     printf("Connected %d!\n\n",result);
@@ -18,10 +43,24 @@ void disconnect_callback(struct mosquitto *mosq, void *obj, int result) {
     printf("Disconnected %d!\n\n",result);
 }
 
+void subscribe_callback( struct mosquitto *mosq, void *obj, int mid, int qos_count, const int *granted_qos) {
+    printf("Subscribe\n");
+    printf("mySocket:%d\n", mySocket);
+}
+
 void message_callback(struct mosquitto *mosq, void *obj, const struct mosquitto_message *message) {
-    printf("You have a message:\n");
-    printf("\t%s\n", message->topic);
-    printf("\t%s\n", (char *)message->payload);
+    char *name;
+    char scratch[255];
+
+//    printf("You have a message:\n");
+//    printf("\t%s\n", message->topic);
+    name = listMatchLong( message->topic );
+//    printf("\t%s\n", (char *)message->payload);
+//     printf("mySocket:%d\n", mySocket);
+//    printf("Test %s\n", name);
+
+    sprintf(scratch,"^set %s %s\n", (char *)name, (char *)message->payload);
+    Writeline(mySocket, (void *)scratch, strlen(scratch));
 }
 
 // Return the long name in the pointer passed in from the caller.
@@ -69,13 +108,15 @@ int clientInstance::getMap(char *shortName, char *longName) {
     return(rc);
 }
 
-clientInstance::clientInstance(char *path) {
+clientInstance::clientInstance(char *path, int s) {
 
     verbose=true;
     identified=false;
     locked=false;
     brokerConnected=false;
+    mySocket = s;
 
+    printf("Socket passed in %d\n",s);
     db = (struct sqlite3 *)NULL;
 
     mosq = (struct mosquitto *)NULL;
@@ -307,6 +348,7 @@ int clientInstance::cmdDump() {
     return rc;
 }
 
+
 int clientInstance::cmdConnect() {
 
     char cmdBuffer[255];
@@ -317,6 +359,7 @@ int clientInstance::cmdConnect() {
     int mosqRc=-1;
 
     int rc = 0x100;
+
 //    struct mosquitto *mosq = NULL;
 
     bool clean_session = false; // TODO What?
@@ -328,11 +371,12 @@ int clientInstance::cmdConnect() {
         mosquitto_connect_callback_set(mosq, connect_callback);
         mosquitto_disconnect_callback_set(mosq, disconnect_callback);
         mosquitto_message_callback_set(mosq, message_callback);
+        mosquitto_subscribe_callback_set(mosq, subscribe_callback);
 
         rc = mosquitto_connect(mosq, globals.getMQTTAddress(), globals.getMQTTPort(), 60);
         switch(rc) {
             case MOSQ_ERR_SUCCESS:
-                mosquitto_subscribe(mosq, NULL, "#", 0);
+//                mosquitto_subscribe(mosq, NULL, "#", 0);
                 mosquitto_loop_start( mosq );
                 rc =  MQTT_OK;
                 break;
@@ -353,7 +397,7 @@ int clientInstance::cmdConnect() {
 }
 
 void clientInstance::doClearAll() {
-    char cmdBuffer[255];
+    char cmdBuffer[256];
     //    redisReply *r;
 
     sprintf(cmdBuffer,"delete from %s_variables", nodeName);
