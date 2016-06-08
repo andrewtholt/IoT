@@ -158,7 +158,7 @@ void handleConnection(int newsock) {
     myPid=getpid();
     // 
     // .. use pid to construct posix message path.
-    
+
     sprintf(mqName,"/fs%08d", myPid);
     //
     mq = mq_open(mqName, O_CREAT | O_RDONLY, 0644, &attr);
@@ -181,51 +181,40 @@ void handleConnection(int newsock) {
     while(runFlag) {
 
         pfds[0].fd = newsock;
-        pfds[0].events=O_RDONLY;
+        pfds[0].events=POLLIN;
 
         pfds[1].fd = mq;
-        pfds[1].events=O_RDONLY;
-
-        poll(pfds,2,-1);
+        pfds[1].events=POLLIN;
 
         memset( buffer, (int) 0, sizeof(buffer));
         memset( outBuffer, (int) 0, sizeof(outBuffer));
         // 
         // use poll on socket and message queue handle.
         //
+        poll(pfds,2,-1);
+
         rc=Readline(newsock,(void *)buffer,sizeof(buffer));
 
-        if( rc == 0) {
-            // Client disconnected
-            runFlag=false;
-            client.cmdExit();
+        if (pfds[0].revents == POLLIN ) {
 
-        }
+            if( rc == 0) {
+                // Client disconnected
+                runFlag=false;
+                client.cmdExit();
 
-        if( rc > 0 ) {
-            if(strlen(buffer) > 0) {
-                int err;
-                printf("Buffer:>%s<\n",buffer);
+            }
 
-                err = client.cmdParser(buffer,outBuffer);
-                Writeline(newsock,outBuffer,strlen(outBuffer));
-                if (CLIENTEXIT == err ) {
-                    runFlag=false;
+            if( rc > 0 ) {
+                if(strlen(buffer) > 0) {
+                    int err;
+                    printf("Buffer:>%s<\n",buffer);
+
+                    err = client.cmdParser(buffer,outBuffer);
+                    Writeline(newsock,outBuffer,strlen(outBuffer));
+                    if (CLIENTEXIT == err ) {
+                        runFlag=false;
+                    }
                 }
-                /*
-                   switch(err) {
-                   case OK:
-                   Writeline(newsock,outBuffer,strlen(outBuffer));
-                   break;
-                   case CLIENTEXIT:
-                   runFlag = false;
-                   break;
-                   default:
-                   sprintf(outBuffer,"ERROR:0x%02x\n", err);
-                   Writeline(newsock,outBuffer,strlen(outBuffer));
-                   break;
-                   }
-                   */
             }
         }
     }
