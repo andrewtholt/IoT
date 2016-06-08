@@ -18,7 +18,10 @@
 #include <errno.h>
 
 #include <fcntl.h>
+#include <sys/poll.h>
 #include <sys/stat.h>
+#include <sys/time.h>
+
 #include <mqueue.h>
 
 #include "helper.h"
@@ -149,6 +152,8 @@ void handleConnection(int newsock) {
     attr.mq_msgsize = 1024;
     attr.mq_curmsgs = 0;
 
+    struct pollfd pfds[2];
+
     // Get pid ...
     myPid=getpid();
     // 
@@ -174,6 +179,14 @@ void handleConnection(int newsock) {
      * wait for destination and message.
      */
     while(runFlag) {
+
+        pfds[0].fd = newsock;
+        pfds[0].events=O_RDONLY;
+
+        pfds[1].fd = mq;
+        pfds[1].events=O_RDONLY;
+
+        poll(pfds,2,-1);
 
         memset( buffer, (int) 0, sizeof(buffer));
         memset( outBuffer, (int) 0, sizeof(outBuffer));
