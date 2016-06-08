@@ -17,6 +17,10 @@
 #include <sqlite3.h>
 #include <errno.h>
 
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <mqueue.h>
+
 #include "helper.h"
 
 #include "globals.h"
@@ -125,6 +129,9 @@ void handleConnection(int newsock) {
     bool identified = false;
     int rc=0;
     char buffer[255];
+
+    char mqName[255];
+
     char outBuffer[255];
     char nodeName[255];
 
@@ -132,8 +139,29 @@ void handleConnection(int newsock) {
     char *p1=(char *)NULL;
     char *p2=(char *)NULL;
     int error=0;
+    pid_t myPid=0;
 
-    clientInstance client(globals.getDbPath(),newsock);
+    mqd_t mq;
+    struct mq_attr attr;
+
+    attr.mq_flags = 0;
+    attr.mq_maxmsg = 10;
+    attr.mq_msgsize = 1024;
+    attr.mq_curmsgs = 0;
+
+    // Get pid ...
+    myPid=getpid();
+    // 
+    // .. use pid to construct posix message path.
+    
+    sprintf(mqName,"/fs%08d", myPid);
+    //
+    mq = mq_open(mqName, O_CREAT | O_RDONLY, 0644, &attr);
+
+    // 
+    // Create a message queue and pass reference into client.
+    //
+    clientInstance client(globals.getDbPath(),newsock, myPid);
     globals.display();
     /*
      * Get name of client (this will be used to create the client name).
@@ -149,9 +177,8 @@ void handleConnection(int newsock) {
 
         memset( buffer, (int) 0, sizeof(buffer));
         memset( outBuffer, (int) 0, sizeof(outBuffer));
-
-        // TODO If newsock is an attribute of client instance can
-        // mosquitto callback see it ?
+        // 
+        // use poll on socket and message queue handle.
         //
         rc=Readline(newsock,(void *)buffer,sizeof(buffer));
 
@@ -159,6 +186,7 @@ void handleConnection(int newsock) {
             // Client disconnected
             runFlag=false;
             client.cmdExit();
+
         }
 
         if( rc > 0 ) {
@@ -189,6 +217,7 @@ void handleConnection(int newsock) {
         }
     }
 
+    mq_unlink(mqName);
     close(newsock);
     exit(0);
 }

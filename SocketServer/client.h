@@ -28,6 +28,8 @@ class clientInstance {
 
     int connectToSQLITE();
 
+    pid_t myPid;
+
     struct mosquitto *mosq;
 
     int cmdSet( char *name, char *value);
@@ -44,7 +46,7 @@ class clientInstance {
     int getMap(char *shortName,char *longName);
 
     public:
-        clientInstance(char *path, int s);
+        clientInstance(char *path, int s,pid_t iam);
     // 
     // Message call back.
     //

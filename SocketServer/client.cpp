@@ -48,6 +48,9 @@ void subscribe_callback( struct mosquitto *mosq, void *obj, int mid, int qos_cou
     printf("mySocket:%d\n", mySocket);
 }
 
+// TODO: Investigate sending received message to a message queue.
+// Main loop will then poll the message fd, and the socket.
+//
 void message_callback(struct mosquitto *mosq, void *obj, const struct mosquitto_message *message) {
     char *name;
     char scratch[255];
@@ -108,13 +111,14 @@ int clientInstance::getMap(char *shortName, char *longName) {
     return(rc);
 }
 
-clientInstance::clientInstance(char *path, int s) {
+clientInstance::clientInstance(char *path, int s, pid_t iam) {
 
     verbose=true;
     identified=false;
     locked=false;
     brokerConnected=false;
     mySocket = s;
+    myPid=iam;
 
     printf("Socket passed in %d\n",s);
     db = (struct sqlite3 *)NULL;
@@ -130,6 +134,7 @@ clientInstance::clientInstance(char *path, int s) {
 }
 
 clientInstance::~clientInstance() {
+    printf("DESD\n\n");
 }
 
 void clientInstance::setVerbose(bool flag) {
