@@ -218,7 +218,7 @@ void handleConnection(int newsock) {
             }
         }
     }
-
+    // Cleanup and exit.
     mq_unlink(mqName);
     close(newsock);
     exit(0);
