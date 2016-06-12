@@ -11,6 +11,8 @@ globalSettings::globalSettings() {
     verbose=false;
 
     strcpy(dbPath,"/tmp");
+
+    strcpy(hostName,"127.0.0.1");
     strcpy(port,"9090");
 
     strcpy(mqtt_ip,"127.0.0.1");
@@ -29,6 +31,7 @@ void globalSettings::display() {
     } else {
         printf("False\n");
     }
+    printf("Host         : %s\n",hostName);
     printf("Port         : %s\n",port);
     printf("DB Path      : %s\n",dbPath);
 
@@ -64,6 +67,14 @@ void globalSettings::setDbPath(char *p) {
 
 char *globalSettings::getDbPath(void) {
     return(dbPath);
+}
+
+char *globalSettings::getHost() {
+    return hostName;
+}
+
+void globalSettings::setHost(char *name) {
+    strncpy(hostName,name,sizeof(hostName));
 }
 
 char *globalSettings::getPort() {

@@ -3,6 +3,7 @@
 #include <string.h>
 #include <sqlite3.h>
 #include <mosquitto.h>
+#include <mqueue.h>
 
 #include "client.h"
 #include "errors.h"
@@ -44,8 +45,18 @@ void disconnect_callback(struct mosquitto *mosq, void *obj, int result) {
 }
 
 void subscribe_callback( struct mosquitto *mosq, void *obj, int mid, int qos_count, const int *granted_qos) {
+    int rc=-1;
+    extern mqd_t mq;
+
     printf("Subscribe\n");
     printf("mySocket:%d\n", mySocket);
+    printf("mq      :%d\n", mq);
+
+    rc=mq_send(mq, "TESTING", 7, 1);
+    if( rc < 0) {
+        fprintf(stderr,"mq_send\n");
+        perror("\t");
+    }
 }
 
 // TODO: Investigate sending received message to a message queue.

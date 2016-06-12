@@ -169,6 +169,9 @@ void handleConnection(int newsock) {
         sprintf(outBuffer,"ERROR:mq_open failed\n");
         Writeline(newsock,outBuffer,strlen(outBuffer));
     }
+    if(globals.getVerbose()) {
+        printf("mq    : %d\n",mq);
+    }
 
     // 
     // Create a message queue and pass reference into client.
@@ -199,6 +202,8 @@ void handleConnection(int newsock) {
         // use poll on socket and message queue handle.
         //
         poll(pfds,2,-1);
+
+        printf("Poll fired\n");
 
         rc=Readline(newsock,(void *)buffer,sizeof(buffer));
 
@@ -234,12 +239,13 @@ void handleConnection(int newsock) {
 void usage(char * name) {
     printf("\nUsage:%s -h|-v|-p <listen> -P <database path>\n", name);
     printf("\t-h\t\tHelp.\n");
-    printf("\t-v\t\tVerbose.\n");
+    printf("\t-n <name>\tNodename or address of host, default is localhost.\n");
     printf("\t-p <listen>\tPort that this service listens on.\n");
     printf("\t-P\t\tPath to global database.\n");
+    printf("\t-v\t\tVerbose.\n");
     printf("\n");
     printf("Default behaviour is equivalent to:\n");
-    printf("\t%s -p 9090 -R 127.0.0.1 -P /tmp\n",name);
+    printf("\t%s -p 9090 -n 127.0.0.1 -P /tmp\n",name);
     printf("\n");
 
 }
@@ -262,21 +268,23 @@ int main(int argc,char *argv[]) {
     sqlite3_stmt *sqlRes;
     int rc;
 
-
-    while((opt=getopt(argc,argv,"P:p:R:vh?"))!=-1) {
+    while((opt=getopt(argc,argv,"n:P:p:R:vh?"))!=-1) {
         switch(opt) {
             case 'h':
                 usage(argv[0]);
                 exit(0);
                 break;
-            case 'v':
-                globals.setVerbose(true);
+            case 'n':
+                globals.setHost(optarg);
                 break;
             case 'p':  // Port that I will listen to.
                 globals.setPort(optarg);
                 break;
             case 'P':   // Path to databse files
                 globals.setDbPath(optarg);
+                break;
+            case 'v':
+                globals.setVerbose(true);
                 break;
             default:
                 break;
@@ -367,7 +375,7 @@ int main(int argc,char *argv[]) {
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
 
-    if (getaddrinfo(NULL, globals.getPort(), &hints, &res) != 0) {
+    if (getaddrinfo(globals.getHost(), globals.getPort(), &hints, &res) != 0) {
         perror("getaddrinfo");
         return 1;
     }

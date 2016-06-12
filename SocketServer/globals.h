@@ -5,6 +5,7 @@
 class globalSettings {
     bool verbose;
     char dbPath[32];
+    char hostName[255];
     char port[8];
 //    char *namePtr;
     bool locked=false;
@@ -27,6 +28,9 @@ class globalSettings {
 
         void setPort(char *p);
         char *getPort();
+
+        void setHost(char *p);
+        char *getHost();
 
         void setMQTTAddress(char *addr);
         void setMQTTPort(char *addr);
