@@ -124,6 +124,7 @@ void errorMessage(int rc,char *msg) {
 /*
  * ATH:  This is where the real work is done.
  */
+mqd_t mq;
 
 void handleConnection(int newsock) {
     /* recv(), send(), close() */
@@ -144,7 +145,6 @@ void handleConnection(int newsock) {
     int error=0;
     pid_t myPid=0;
 
-    mqd_t mq;
     struct mq_attr attr;
 
     attr.mq_flags = 0;
@@ -162,6 +162,11 @@ void handleConnection(int newsock) {
     sprintf(mqName,"/fs%08d", myPid);
     //
     mq = mq_open(mqName, O_CREAT | O_RDONLY, 0644, &attr);
+    if( mq < 0 ) {
+        fprintf(stderr,"FATAL_ERROR:mq_open failed\n");
+        perror("handleConnection");
+        runFlag = false;
+    }
 
     // 
     // Create a message queue and pass reference into client.
