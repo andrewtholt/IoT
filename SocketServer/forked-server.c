@@ -166,6 +166,8 @@ void handleConnection(int newsock) {
         fprintf(stderr,"FATAL_ERROR:mq_open failed\n");
         perror("handleConnection");
         runFlag = false;
+        sprintf(outBuffer,"ERROR:mq_open failed\n");
+        Writeline(newsock,outBuffer,strlen(outBuffer));
     }
 
     // 
