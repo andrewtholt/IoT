@@ -143,6 +143,7 @@ void handleConnection(int newsock) {
     char *p1=(char *)NULL;
     char *p2=(char *)NULL;
     int error=0;
+    int mosqRc; // mosquitto status
     pid_t myPid=0;
 
     struct mq_attr attr;
@@ -161,7 +162,7 @@ void handleConnection(int newsock) {
 
     sprintf(mqName,"/fs%08d", myPid);
     //
-    mq = mq_open(mqName, O_CREAT | O_RDONLY, 0644, &attr);
+    mq = mq_open(mqName, O_CREAT | O_RDWR, 0644, &attr);
     if( mq < 0 ) {
         fprintf(stderr,"FATAL_ERROR:mq_open failed\n");
         perror("handleConnection");
@@ -169,6 +170,7 @@ void handleConnection(int newsock) {
         sprintf(outBuffer,"ERROR:mq_open failed\n");
         Writeline(newsock,outBuffer,strlen(outBuffer));
     }
+
     if(globals.getVerbose()) {
         printf("mq    : %d\n",mq);
     }
@@ -201,32 +203,53 @@ void handleConnection(int newsock) {
         // 
         // use poll on socket and message queue handle.
         //
-        poll(pfds,2,-1);
+        rc=poll(pfds,2,100);
 
-        printf("Poll fired\n");
+        if( rc == 0) {
 
-        rc=Readline(newsock,(void *)buffer,sizeof(buffer));
+            if( globals.getMQTTConnected() ) {
+                mosqRc = mosquitto_loop( client.getMQTTHandle(),0, 1);
 
-        if (pfds[0].revents == POLLIN ) {
-
-            if( rc == 0) {
-                // Client disconnected
-                runFlag=false;
-                client.cmdExit();
-
+            } else {
+                // printf("... NOT Connected to MQTT\n");
             }
+        } else {
+            // TODO This is getting messy, refactor.
+            //
+            if (pfds[0].revents == POLLIN ) {
 
-            if( rc > 0 ) {
-                if(strlen(buffer) > 0) {
-                    int err;
-                    printf("Buffer:>%s<\n",buffer);
+                rc=Readline(newsock,(void *)buffer,sizeof(buffer));
+                if( rc == 0) {
+                    // Client disconnected
+                    runFlag=false;
+                    client.cmdExit();
 
-                    err = client.cmdParser(buffer,outBuffer);
-                    Writeline(newsock,outBuffer,strlen(outBuffer));
-                    if (CLIENTEXIT == err ) {
-                        runFlag=false;
+                }
+
+                if( rc > 0 ) {
+                    if(strlen(buffer) > 0) {
+                        int err;
+                        printf("Buffer:>%s<\n",buffer);
+
+                        err = client.cmdParser(buffer,outBuffer);
+                        Writeline(newsock,outBuffer,strlen(outBuffer));
+                        if (CLIENTEXIT == err ) {
+                            runFlag=false;
+                        }
                     }
                 }
+            }
+            if(pfds[1].revents == POLLIN ) {
+                char msg_ptr[attr.mq_msgsize];
+                int len;
+                unsigned int prio;
+
+                errno=0;
+                len=mq_receive(mq, msg_ptr, attr.mq_msgsize, &prio);
+                if( len < 0) {
+                    perror("mq_rx");
+                }
+                printf("len=%d\n",len);
             }
         }
     }

@@ -9,6 +9,7 @@ class globalSettings {
     char port[8];
 //    char *namePtr;
     bool locked=false;
+    bool mqttConnected = false;
     // MQTT settings, loaded from database.
     //
     char mqtt_ip[17]; // IP Address
@@ -37,5 +38,9 @@ class globalSettings {
 
         char *getMQTTAddress();
         int getMQTTPort();
+
+        bool getMQTTConnected();
+        void setMQTTConnected(bool f);
+
 };
 #endif

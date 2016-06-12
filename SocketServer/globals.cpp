@@ -23,23 +23,39 @@ void globalSettings::lock() {
     locked = true;
 }
 
+void globalSettings::setMQTTConnected(bool f) {
+    mqttConnected = f;
+}
+
+bool globalSettings::getMQTTConnected() {
+    return mqttConnected;
+}
+
 void globalSettings::display() {
 
-    printf("Verbose      : ");
+    printf("Verbose       : ");
     if(verbose) {
         printf("True\n");
     } else {
         printf("False\n");
     }
-    printf("Host         : %s\n",hostName);
-    printf("Port         : %s\n",port);
-    printf("DB Path      : %s\n",dbPath);
+    printf("Host          : %s\n",hostName);
+    printf("Port          : %s\n",port);
+    printf("DB Path       : %s\n",dbPath);
 
     printf("==== MQTT ====\n");
-    printf("MQTT IP      : %s\n",mqtt_ip);
-    printf("MQTT Port    : %d\n",mqtt_port);
+    printf("MQTT IP       : %s\n",mqtt_ip);
+    printf("MQTT Port     : %d\n",mqtt_port);
+    printf("MQTT Connected: ");
+    if(mqttConnected) {
+        printf("True");
+    } else {
+        printf("False");
+    }
+    printf("\n");
+    printf("==============\n");
 
-    printf("Locked       : ");
+    printf("Locked        : ");
     if(locked) {
         printf("True");
     } else {

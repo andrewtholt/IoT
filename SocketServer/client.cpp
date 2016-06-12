@@ -38,6 +38,8 @@ char *listMatchLong(char *name) {
 
 void connect_callback(struct mosquitto *mosq, void *obj, int result) {
     printf("Connected %d!\n\n",result);
+    globals.display();
+    printf("==============\n");
 }
 
 void disconnect_callback(struct mosquitto *mosq, void *obj, int result) {
@@ -77,6 +79,9 @@ void message_callback(struct mosquitto *mosq, void *obj, const struct mosquitto_
     Writeline(mySocket, (void *)scratch, strlen(scratch));
 }
 
+struct mosquitto *clientInstance::getMQTTHandle() {
+    return mosq;
+}
 // Return the long name in the pointer passed in from the caller.
 //
 int clientInstance::getMap(char *shortName, char *longName) {
@@ -393,7 +398,8 @@ int clientInstance::cmdConnect() {
         switch(rc) {
             case MOSQ_ERR_SUCCESS:
 //                mosquitto_subscribe(mosq, NULL, "#", 0);
-                mosquitto_loop_start( mosq );
+                globals.setMQTTConnected(true);
+//                mosquitto_loop_start( mosq );
                 rc =  MQTT_OK;
                 break;
             case MOSQ_ERR_INVAL:

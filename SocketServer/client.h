@@ -47,6 +47,8 @@ class clientInstance {
 
     public:
         clientInstance(char *path, int s,pid_t iam);
+
+        struct mosquitto *getMQTTHandle();
     // 
     // Message call back.
     //
