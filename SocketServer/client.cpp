@@ -68,15 +68,19 @@ void message_callback(struct mosquitto *mosq, void *obj, const struct mosquitto_
     char *name;
     char scratch[255];
 
-//    printf("You have a message:\n");
-//    printf("\t%s\n", message->topic);
     name = listMatchLong( message->topic );
-//    printf("\t%s\n", (char *)message->payload);
-//     printf("mySocket:%d\n", mySocket);
-//    printf("Test %s\n", name);
 
     sprintf(scratch,"^set %s %s\n", (char *)name, (char *)message->payload);
     Writeline(mySocket, (void *)scratch, strlen(scratch));
+
+    // Alternative to the above Writeline
+    /*
+    rc=mq_send(mq, scratch, strlen(scratch), 1);
+    if( rc < 0) {
+        fprintf(stderr,"mq_send\n");
+        perror("\t");
+    }
+    */
 }
 
 struct mosquitto *clientInstance::getMQTTHandle() {
@@ -247,7 +251,6 @@ int clientInstance::cmdGet(char *name,char *value) {
 
     sprintf(cmdBuffer,"select value from %s_variables where name='%s'", nodeName, name );
     printf("DEBUG:%s\n",cmdBuffer);
-    //    rc = sqlite3_exec(db, cmdBuffer, NULL, 0, &zErrMsg);
 
     rc = sqlite3_prepare(db, cmdBuffer,-1, &res,0);
     if(rc == 0 ) {
@@ -339,7 +342,6 @@ int clientInstance::cmdPub(char *name,char *value) {
     }
 
 
-    //    rc = PARSER|NOTIMPLEMENTED;
     return rc;
 }
 
@@ -355,8 +357,6 @@ int clientInstance::cmdSub(char *name) {
         rc=mosquitto_subscribe(mosq,&mosqRc,longName,qos);
     } else {
     }
-
-//    rc = PARSER|NOTIMPLEMENTED;
 
     return rc;
 }
@@ -420,10 +420,10 @@ int clientInstance::cmdConnect() {
 
 void clientInstance::doClearAll() {
     char cmdBuffer[256];
-    //    redisReply *r;
 
     sprintf(cmdBuffer,"delete from %s_variables", nodeName);
     printf("DEBUG:%s\n", cmdBuffer);
+    // 
     // TODO make sure connected flag is still set.
     //
 }
