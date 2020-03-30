@@ -1,0 +1,12 @@
+
+[ ] Connect to WiFi.
+[ ] Connect to mosquitto broker.
+[ ] Publish light levelr.
+[ ] Attach GY-68/BMP180 digital pressure sensor.
+[ ] Publish atmospheric pressure.
+[ ] Attach temperature/humidity sensor.
+[ ] Publish temperature/humity.
+[ ] Graph on Home Assistant.
+[ ] Attache LCD display
+[ ] Show readings.
+
