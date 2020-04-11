@@ -1,0 +1,6 @@
+{
+    "ESSID":"HoltAtHome4",
+    "PASSWD":"anthony050192"
+    "MQTT_HOST":"192.168.10.124",
+    "PORT": "1883"
+}
