@@ -1,20 +1,21 @@
 import sys
 import time
-from umqttsimple import MQTTClient
+
 import ubinascii
 import machine
 import micropython
 import network
 import esp
-import bh1750fvi
+
 from machine import I2C,Pin
-from bmp180 import BMP180
-import dht
+
 import json
+import btree
 
 from iotNetwork import iotNetwork
+from wemos import environment
 
-from math import log
+# from math import log
 
 def main():
     esp.osdebug(None)
@@ -40,8 +41,37 @@ def main():
     print("Free : ", gc.mem_free())
     gc.collect()
 
-#    net = iotNetwork()
-#    net.connect()
+    db = btree.open(f)
+
+    for key, value in netCfg.items():
+        print(key,"->", value)
+        db[ key.encode()] = value.encode()
+
+    db.close()
+    f.close()
+
+
+    dht11Pin = int(netCfg['DHT11_PIN'])
+
+    net = iotNetwork()
+    net.connect()
+    net.connectMQTT()
+
+    env = environment(dht11Pin)
+
+    while True:
+        env.update()
+
+        temp = env.get('TEMPERATURE')
+        net.publishMQTT("temperature", str(temp))
+
+        temp = env.get('HUMIDITY')
+        net.publishMQTT("humidity", str(temp))
+
+        gc.collect()
+        time.sleep(15)
+
+    net.publishMQTT("fred","1234")
 
 main()
 
