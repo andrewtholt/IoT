@@ -1,20 +1,17 @@
 import json
 import network
+from umqttsimple import MQTTClient
+import btree
+import ubinascii
+import machine
 
 class iotNetwork :
     netCfg = None
 
     def __init__(self):
-        try:
-            netFile = open('network.json','r')
-        
-            c = netFile.read()
-        
-            self.netCfg = json.loads(c)
-        
-            print(self.netCfg)
-        except:
-            print("Failed to open network file.")
+        cfgFile = open('iotdb.db','r+b')
+
+        self.netCfg = btree.open(cfgFile)
 
     def connect(self):
         print("Connect")
@@ -26,8 +23,8 @@ class iotNetwork :
         print('connecting to network...')
         self.sta_if.active(True)
 
-        essid = self.netCfg['ESSID']
-        password = self.netCfg['PASSWD']
+        essid    = (self.netCfg[b"ESSID"]).decode()
+        password = (self.netCfg[b"PASSWD"]).decode()
 
         self.sta_if.connect(essid, password)
 
@@ -35,6 +32,22 @@ class iotNetwork :
             pass
 
         print("... Connected")
+
+    def connectMQTT(self):
+        print("MQTT")
+        mqttHost = (self.netCfg[b"MQTT_HOST"]).decode()
+        mqttPort = int((self.netCfg[b"PORT"]).decode())
+        self.base = (self.netCfg[b"MQTT_BASE"]).decode()
+
+        clientId = ubinascii.hexlify(machine.unique_id())
+
+        self.client = MQTTClient(clientId, mqttHost)
+        self.client.connect()
+
+    def publishMQTT(self,topic,message):
+        print("Publish: " + topic + "->" + message)
+        print(self.base + topic, message )
+        self.client.publish(self.base + topic, message )
 
     def ifconfig(self):
         self.sta_if.ifconfig()

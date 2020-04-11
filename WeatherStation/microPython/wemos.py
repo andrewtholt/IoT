@@ -9,6 +9,7 @@ class environment:
 
     envData['HUMIDITY'] =0 
     envData['TEMPERATURE'] = -100 
+    envData['PRESSURE'] = -1
     envData['DEW_POINT'] = -1
 
     sensor = None;
@@ -34,7 +35,9 @@ class environment:
         self.envData['TEMPERATURE'] = self.sensor.temperature()
 
         self.calcDewpoint()
-    
+
+    def get(self,name):
+        return( self.envData[ name ])
 
     def dump(self):
         print('Humidity   :',self.envData['HUMIDITY'], '%')
