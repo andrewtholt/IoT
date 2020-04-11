@@ -65,8 +65,11 @@ def main():
         temp = env.get('TEMPERATURE')
         net.publishMQTT("temperature", str(temp))
 
-        temp = env.get('HUMIDITY')
-        net.publishMQTT("humidity", str(temp))
+        humid = env.get('HUMIDITY')
+        net.publishMQTT("humidity", str(humid))
+
+        dew = env.get('DEW_POINT')
+        net.publishMQTT("dewpoint", str(dew))
 
         gc.collect()
         time.sleep(15)
