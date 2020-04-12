@@ -1,7 +1,8 @@
-from machine import I2C,Pin
+import machine
 import dht
 from math import log
-
+from bmp180 import BMP180
+import bh1750fvi
 
 class environment:
 
@@ -9,13 +10,30 @@ class environment:
 
     envData['HUMIDITY'] =0 
     envData['TEMPERATURE'] = -100 
-    envData['PRESSURE'] = -1
     envData['DEW_POINT'] = -1
+    envData['LIGHT_LEVEL'] = -1
 
-    sensor = None;
+    envData['BMP_TEMPERATURE'] = -100 
+    envData['BMP_PRESSURE'] = -0 
+
+    bmp180 = None
+    i2c = None
 
     def __init__(self,dhtPin):
-        self.sensor = dht.DHT11(Pin(dhtPin))
+        self.sensor = dht.DHT11(machine.Pin(dhtPin))
+
+    def getI2C(self):
+
+        if self.i2c == None:
+            self.i2c = machine.I2C(scl=machine.Pin(5), sda=machine.Pin(4))
+            self.bmp180 = BMP180(self.i2c)
+            self.bmp180.oversample_sett = 2
+            self.bmp180.baseline = 101325
+
+        self.envData['LIGHT_LEVEL']     = bh1750fvi.sample(self.i2c)
+        self.envData['BMP_TEMPERATURE'] = self.bmp180.temperature
+        self.envData['BMP_PRESSURE']    = (self.bmp180.pressure)/100
+
 
     def calcDewpoint(self):
         a = 17.271
@@ -40,9 +58,13 @@ class environment:
         return( self.envData[ name ])
 
     def dump(self):
-        print('Humidity   :',self.envData['HUMIDITY'], '%')
-        print('Temperature:',self.envData['TEMPERATURE'], 'C')
-        print('Dew Point  :',self.envData['DEW_POINT'], 'C')
+        print('Humidity       :',self.envData['HUMIDITY'], '%')
+        print('Temperature    :',self.envData['TEMPERATURE'], 'C')
+        print('Dew Point      :',self.envData['DEW_POINT'], 'C')
+
+        print('Light Level    :',self.envData['LIGHT_LEVEL'])
+        print('bmp Temperature:',self.envData['BMP_TEMPERATURE'],'C')
+        print('bmp Pressure   :',self.envData['BMP_PRESSURE'],'mBar')
 
 
 

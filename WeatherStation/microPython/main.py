@@ -62,6 +62,7 @@ def main():
     while True:
         env.update()
 
+
         temp = env.get('TEMPERATURE')
         net.publishMQTT("temperature", str(temp))
 
@@ -70,6 +71,20 @@ def main():
 
         dew = env.get('DEW_POINT')
         net.publishMQTT("dewpoint", str(dew))
+
+        # 
+        # Comment this out if you dont gave bmp120 or light level
+        #
+        env.getI2C()
+
+        mbar = env.get('BMP_PRESSURE')
+        net.publishMQTT("pressure", str(mbar))
+
+        light = env.get('LIGHT_LEVEL')
+        net.publishMQTT("light", str(light))
+        # 
+        # HERE
+        #
 
         gc.collect()
         time.sleep(15)
