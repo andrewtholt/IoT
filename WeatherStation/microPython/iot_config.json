@@ -3,8 +3,8 @@
     "PASSWD":"anthony050192",
     "MQTT_HOST":"192.168.10.124",
     "PORT": "1883",
-    "DHT11_PIN":"12",
+    "DHT11_PIN":"2",
 
-    "MQTT_BASE":"/home/office/"
-
+    "MQTT_BASE":"/test/",
+    "SLEEP_TIME":"15"
 }

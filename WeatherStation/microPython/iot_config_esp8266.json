@@ -5,6 +5,6 @@
     "PORT": "1883",
     "DHT11_PIN":"12",
 
-    "MQTT_BASE":"/home/office/"
-
+    "MQTT_BASE":"/home/office/",
+    "SLEEP_TIME":"15"
 }

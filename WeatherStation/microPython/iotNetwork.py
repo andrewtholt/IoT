@@ -33,6 +33,17 @@ class iotNetwork :
 
         print("... Connected")
 
+    def disconnect(self):
+        print("Disconnect")
+        self.sta_if.disconnect()
+        print("Disconnect")
+
+        count=0
+        while self.sta_if.isconnected():
+            count += 1
+            print(count)
+        print("Disconnected")
+
     def connectMQTT(self):
         print("MQTT")
         mqttHost = (self.netCfg[b"MQTT_HOST"]).decode()
@@ -44,13 +55,18 @@ class iotNetwork :
         self.client = MQTTClient(clientId, mqttHost)
         self.client.connect()
 
+    def disconnectMQTT(self):
+        print("MQTT Disconnect")
+        self.client.disconnect()
+        print("MQTT Disconnected")
+
     def publishMQTT(self,topic,message):
         print("Publish: " + topic + "->" + message)
         print(self.base + topic, message )
         self.client.publish(self.base + topic, message )
 
     def ifconfig(self):
-        self.sta_if.ifconfig()
+        print(self.sta_if.ifconfig())
 
 if __name__ == "__main__":
     net = iotNetwork()
