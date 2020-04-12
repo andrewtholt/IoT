@@ -3,6 +3,7 @@ import dht
 from math import log
 from bmp180 import BMP180
 import bh1750fvi
+from time import sleep
 
 class environment:
 
@@ -20,12 +21,15 @@ class environment:
     i2c = None
 
     def __init__(self,dhtPin):
-        self.sensor = dht.DHT11(machine.Pin(dhtPin))
+#        d = dht.DHT22(Pin(4, Pin.IN, Pin.PULL_UP))
+        self.sensor = dht.DHT11(machine.Pin(dhtPin, machine.Pin.IN, machine.Pin.PULL_UP))
+#        self.sensor = dht.DHT11(machine.Pin(dhtPin),)
+        sleep(2)
 
     def getI2C(self):
 
         if self.i2c == None:
-            self.i2c = machine.I2C(scl=machine.Pin(5), sda=machine.Pin(4))
+            self.i2c = machine.I2C(scl=machine.Pin(5,machine.Pin.OUT, machine.Pin.PULL_UP), sda=machine.Pin(4,machine.Pin.OUT, machine.Pin.PULL_UP))
             self.bmp180 = BMP180(self.i2c)
             self.bmp180.oversample_sett = 2
             self.bmp180.baseline = 101325
@@ -47,6 +51,7 @@ class environment:
         # 
         # Note pin number is GPIO2
         #
+        sleep(0.25)
         self.sensor.measure()
     
         self.envData['HUMIDITY']    = self.sensor.humidity()
