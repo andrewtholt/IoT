@@ -1,9 +1,11 @@
 #!/bin/sh
 
-set -x
+# set -x
 
 if [ $# -lt 2 ]; then
-    echo "Help"
+    echo "Usage: upload.sh <port> <type>"
+    echo "e.g. ./upload.sh /dev/ttyUSB9 wemos"
+    exit 0
 fi
 PORT=$1
 TARGET=$2

@@ -17,7 +17,7 @@ from wemos import environment
 
 # from math import log
 def deepSleep(msecs):
-    print("Nmap", msecs)
+    print("Nap", msecs)
     #configure RTC.ALARM0 to be able to wake the device
     rtc = machine.RTC()
     rtc.irq(trigger=rtc.ALARM0, wake=machine.DEEPSLEEP)
@@ -107,13 +107,13 @@ def main():
     # 
     # Comment this out if you dont gave bmp120 or light level
     #
-#     env.getI2C()
-# 
-#     mbar = env.get('BMP_PRESSURE')
-#     net.publishMQTT("pressure", str(mbar))
-# 
-#     light = env.get('LIGHT_LEVEL')
-#     net.publishMQTT("light", str(light))
+    env.getI2C()
+
+    mbar = env.get('BMP_PRESSURE')
+    net.publishMQTT("pressure", str(mbar))
+
+    light = env.get('LIGHT_LEVEL')
+    net.publishMQTT("light", str(light))
     # 
     # HERE
     #
