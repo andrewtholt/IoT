@@ -92,7 +92,6 @@ def main():
 
     env = environment(dht11Pin)
 
-#    while True:
     env.update()
 
     temp = env.get('TEMPERATURE')
@@ -103,19 +102,23 @@ def main():
 
     dew = env.get('DEW_POINT')
     net.publishMQTT("dewpoint", str(dew))
-
     # 
-    # Comment this out if you dont gave bmp120 or light level
+    # Comment this out if you dont have bmp120 or light level,
+    # from HERE
     #
-    env.getI2C()
+    iam = netCfg["IAM"]
 
-    mbar = env.get('BMP_PRESSURE')
-    net.publishMQTT("pressure", str(mbar))
-
-    light = env.get('LIGHT_LEVEL')
-    net.publishMQTT("light", str(light))
+    print('iam', iam)
+    if iam == 'ESP8266':
+        env.getI2C()
+    
+        mbar = env.get('BMP_PRESSURE')
+        net.publishMQTT("pressure", str(mbar))
+    
+        light = env.get('LIGHT_LEVEL')
+        net.publishMQTT("light", str(light))
     # 
-    # HERE
+    # to HERE
     #
     time.sleep(1)
     gc.collect()

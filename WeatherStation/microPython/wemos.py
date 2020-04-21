@@ -45,7 +45,13 @@ class environment:
 
         temp = (a * self.envData['TEMPERATURE']) / (b + self.envData['TEMPERATURE']) + log(self.envData['HUMIDITY']*0.01)
 
-        self.envData['DEW_POINT'] = (b * temp) / (a - temp)
+#        self.envData['DEW_POINT'] = (b * temp) / (a - temp)
+        dp = (b * temp) / (a - temp)
+
+        if dp < 0:
+            dp = 0
+
+        self.envData['DEW_POINT'] = dp
 
     def update(self):
         # 
