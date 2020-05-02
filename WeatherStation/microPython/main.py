@@ -43,7 +43,6 @@ def main():
     else:
         hardReset = True
 
-    print("Free : ", gc.mem_free())
 
     try:
         cfgFile = open('iot_config.json','r')
@@ -74,6 +73,9 @@ def main():
             db[ key.encode()] = value.encode()
 
         print("... done")
+
+#    db[ key.encode()] = value.encode()
+    db[ b"MEM_USAGE" ] = str(freeMem).encode()
 
     db.close()
     f.close()
@@ -109,6 +111,7 @@ def main():
     iam = netCfg["IAM"]
 
     print('iam', iam)
+    net.publishMQTT("free_mem", str(freeMem))
     if iam == 'ESP8266':
         env.getI2C()
     
