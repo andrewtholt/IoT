@@ -1,11 +1,1 @@
-{
-    "IAM":"ESP8266",
-    "ESSID":"HoltAtHome4",
-    "PASSWD":"anthony050192",
-    "MQTT_HOST":"192.168.10.124",
-    "PORT": "1883",
-    "DHT11_PIN":"12",
-
-    "MQTT_BASE":"/home/office/",
-    "SLEEP_TIME":"60"
-}
+iot_config_wemos.json
