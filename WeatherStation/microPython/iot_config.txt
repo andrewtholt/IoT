@@ -1,0 +1,13 @@
+{
+    "IAM":"WEMOS",
+    "ESSID":"<essid>",
+    "PASSWD":"<passws>",
+    "MQTT_HOST":"192.168.10.124",
+    "PORT": "1883",
+
+    "DHT11_PIN":"-1",
+    "DHT12":"true",
+
+    "MQTT_BASE":"/home/office/",
+    "SLEEP_TIME":"60"
+}
