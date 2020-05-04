@@ -28,7 +28,6 @@ def deepSleep(msecs):
 
 
 def main():
-
     led = machine.Pin(15, machine.Pin.OUT)
 
     led.value(1)
@@ -42,7 +41,6 @@ def main():
         hardReset = False
     else:
         hardReset = True
-
 
     try:
         cfgFile = open('iot_config.json','r')
@@ -75,7 +73,7 @@ def main():
         print("... done")
 
 #    db[ key.encode()] = value.encode()
-    db[ b"MEM_USAGE" ] = str(freeMem).encode()
+#    db[ b"MEM_USAGE" ] = str(freeMem).encode()
 
     db.close()
     f.close()
@@ -93,6 +91,7 @@ def main():
     net.connectMQTT()
 
     env = environment(dht11Pin)
+    env.getI2C()
 
     env.update()
 
@@ -111,14 +110,15 @@ def main():
     iam = netCfg["IAM"]
 
     print('iam', iam)
-    net.publishMQTT("free_mem", str(freeMem))
-    if iam == 'ESP8266':
-        env.getI2C()
-    
-        mbar = env.get('BMP_PRESSURE')
-        net.publishMQTT("pressure", str(mbar))
-    
-        light = env.get('LIGHT_LEVEL')
+#    net.publishMQTT("free_mem", str(freeMem))
+#    if iam == 'ESP8266':
+#    env.getI2C()
+
+    mbar = env.get('BMP_PRESSURE')
+    net.publishMQTT("pressure", str(mbar))
+
+    light = env.get('LIGHT_LEVEL')
+    if light >= 0:
         net.publishMQTT("light", str(light))
     # 
     # to HERE
@@ -131,7 +131,7 @@ def main():
 
     led.value(0)
     deepSleep(sleepTime)
-#    deepSleep(15000)
+    deepSleep(15000)
 
 main()
 

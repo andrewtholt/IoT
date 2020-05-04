@@ -1,9 +1,13 @@
 import machine
 import dht
+import dht12
+
 from math import log
 from bmp180 import BMP180
 import bh1750fvi
 from time import sleep
+
+import btree
 
 class environment:
 
@@ -19,22 +23,34 @@ class environment:
 
     bmp180 = None
     i2c = None
+    sensor = None
+    dht12sensor = None
+
+    db = None
 
     def __init__(self,dhtPin):
-#        d = dht.DHT22(Pin(4, Pin.IN, Pin.PULL_UP))
-        self.sensor = dht.DHT11(machine.Pin(dhtPin, machine.Pin.IN, machine.Pin.PULL_UP))
-#        self.sensor = dht.DHT11(machine.Pin(dhtPin),)
-        sleep(2)
+
+        if dhtPin > 0:
+            self.sensor = dht.DHT11(machine.Pin(dhtPin, machine.Pin.IN, machine.Pin.PULL_UP))
+            sleep(2)
+        try:
+            f = open("iotdb.db")
+        except:
+            print("Fatal Error db does not exist")
+
+        self.db = btree.open(f)
 
     def getI2C(self):
 
         if self.i2c == None:
             self.i2c = machine.I2C(scl=machine.Pin(5,machine.Pin.OUT, machine.Pin.PULL_UP), sda=machine.Pin(4,machine.Pin.OUT, machine.Pin.PULL_UP))
+
+            self.dht12sensor = dht12.DHT12( self.i2c)
             self.bmp180 = BMP180(self.i2c)
             self.bmp180.oversample_sett = 2
             self.bmp180.baseline = 101325
 
-        self.envData['LIGHT_LEVEL']     = bh1750fvi.sample(self.i2c)
+#        self.envData['LIGHT_LEVEL']     = bh1750fvi.sample(self.i2c)
         self.envData['BMP_TEMPERATURE'] = self.bmp180.temperature
         self.envData['BMP_PRESSURE']    = (self.bmp180.pressure)/100
 
@@ -57,11 +73,16 @@ class environment:
         # 
         # Note pin number is GPIO2
         #
-        sleep(0.25)
-        self.sensor.measure()
     
-        self.envData['HUMIDITY']    = self.sensor.humidity()
-        self.envData['TEMPERATURE'] = self.sensor.temperature()
+        if self.sensor != None:
+            sleep(0.25)
+
+        if self.dht12sensor != None:
+            self.dht12sensor.measure()
+            sleep(0.25)
+
+            self.envData['HUMIDITY']    = self.dht12sensor.humidity()
+            self.envData['TEMPERATURE'] = self.dht12sensor.temperature()
 
         self.calcDewpoint()
 
