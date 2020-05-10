@@ -45,7 +45,7 @@ class iotNetwork :
         print("Disconnected")
 
     def connectMQTT(self):
-        print("MQTT")
+        print("MQTT...")
         mqttHost = (self.netCfg[b"MQTT_HOST"]).decode()
         mqttPort = int((self.netCfg[b"PORT"]).decode())
         self.base = (self.netCfg[b"MQTT_BASE"]).decode()
@@ -54,6 +54,10 @@ class iotNetwork :
 
         self.client = MQTTClient(clientId, mqttHost)
         self.client.connect()
+        print("...Done")
+
+    def checkMQTT(self):
+        self.client.check_msg()
 
     def disconnectMQTT(self):
         print("MQTT Disconnect")
@@ -65,8 +69,18 @@ class iotNetwork :
         print(self.base + topic, message )
         self.client.publish(self.base + topic, message )
 
+    def subscribeMQTT(self, topic, cb):
+        self.client.set_callback(cb)
+        self.client.subscribe( self.base + topic )
+        print("Subscribing to " + self.base + topic)
+
     def ifconfig(self):
         print(self.sta_if.ifconfig())
+    
+    def getIP(self):
+        n = self.sta_if.ifconfig()
+        return(n[0])
+
 
 if __name__ == "__main__":
     net = iotNetwork()

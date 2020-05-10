@@ -15,7 +15,49 @@ import btree
 from iotNetwork import iotNetwork
 from wemos import environment
 
-# from math import log
+runFlag = False
+
+def sub_cb(t, m):
+    global runFlag;
+
+    print("Hello i'm sub_cb")
+
+    topic = t.decode()
+    msg   = m.decode()
+
+    act = (topic.split("/"))[-1]
+    print("Topic = " + topic)
+    print("Msg   = " + msg)
+    print("Act   = " + act)
+
+    if act == "RUN":
+        print("Run :",end="")
+        if msg == "YES":
+            print("Yes")
+            runFlag = True
+
+            f = open('RUN','w')
+            f.close()
+        else:
+            print("No")
+            runFlag = False
+
+            try:
+                os.remove('RUN')
+            except:
+                pass
+
+def fileExists(fname):
+    exists = False
+    try:
+        f = open(fname,"r")
+        exists = True
+    except OSError:
+        exists=False
+
+    return exists
+
+
 def deepSleep(msecs):
     print("Nap", msecs)
     #configure RTC.ALARM0 to be able to wake the device
@@ -28,10 +70,6 @@ def deepSleep(msecs):
 
 
 def main():
-    led = machine.Pin(15, machine.Pin.OUT)
-
-    led.value(1)
-
     esp.osdebug(None)
     gc.collect()
 
@@ -72,23 +110,41 @@ def main():
 
         print("... done")
 
-#    db[ key.encode()] = value.encode()
-#    db[ b"MEM_USAGE" ] = str(freeMem).encode()
-
     db.close()
     f.close()
-
 
     dht11Pin = int(netCfg['DHT11_PIN'])
     sleepTime=15000
 
     sleepTime = (int(netCfg['SLEEP_TIME']) * 1000)
 
+    iam = netCfg["IAM"]
+    print("Iam " + iam)
+
     net = iotNetwork()
     net.connect()
 
     net.ifconfig()
+
+    netCfg["IP"] = net.getIP()
+
     net.connectMQTT()
+
+    net.publishMQTT(iam + "/IP", netCfg["IP"])
+
+    net.subscribeMQTT(iam+"/RUN",sub_cb)
+
+    time.sleep_ms(500)
+    net.checkMQTT()
+
+    if not fileExists("RUN"):
+        print("RUN file does not exist")
+        global runFlag
+        runFlag = False
+
+    if runFlag == False:
+        print("Run flag false")
+        sys.exit(0)
 
     env = environment(dht11Pin)
     env.getI2C()
@@ -107,7 +163,6 @@ def main():
     # Comment this out if you dont have bmp120 or light level,
     # from HERE
     #
-    iam = netCfg["IAM"]
 
     print('iam', iam)
 #    net.publishMQTT("free_mem", str(freeMem))
@@ -123,15 +178,12 @@ def main():
     # 
     # to HERE
     #
-    time.sleep(1)
     gc.collect()
 
     net.disconnectMQTT()
     net.disconnect()
 
-    led.value(0)
     deepSleep(sleepTime)
-    deepSleep(15000)
 
 main()
 
