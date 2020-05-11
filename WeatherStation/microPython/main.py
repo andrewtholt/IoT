@@ -175,6 +175,8 @@ def main():
     light = env.get('LIGHT_LEVEL')
     if light >= 0:
         net.publishMQTT("light", str(light))
+
+    time.sleep_ms(500)
     # 
     # to HERE
     #
