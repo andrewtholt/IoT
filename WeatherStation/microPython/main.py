@@ -130,9 +130,9 @@ def main():
 
     net.connectMQTT()
 
-    net.publishMQTT(iam + "/IP", netCfg["IP"])
+    net.publishMQTT("IP", netCfg["IP"])
 
-    net.subscribeMQTT(iam+"/RUN",sub_cb)
+    net.subscribeMQTT("RUN",sub_cb)
 
     time.sleep_ms(500)
     net.checkMQTT()
