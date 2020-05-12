@@ -17,8 +17,11 @@ from wemos import environment
 
 runFlag = False
 
+netCfg={}
+
 def sub_cb(t, m):
     global runFlag;
+    global netCfg
 
     print("Hello i'm sub_cb")
 
@@ -46,6 +49,10 @@ def sub_cb(t, m):
                 os.remove('RUN')
             except:
                 pass
+    elif act == 'SLEEP_TIME':
+        print("Change sleep to " + msg)
+        netCfg['SLEEP_TIME'] = int(msg)
+
 
 def fileExists(fname):
     exists = False
@@ -70,6 +77,7 @@ def deepSleep(msecs):
 
 
 def main():
+    global netCfg
     esp.osdebug(None)
     gc.collect()
 
@@ -116,7 +124,6 @@ def main():
     dht11Pin = int(netCfg['DHT11_PIN'])
     sleepTime=15000
 
-    sleepTime = (int(netCfg['SLEEP_TIME']) * 1000)
 
     iam = netCfg["IAM"]
     print("Iam " + iam)
@@ -133,9 +140,11 @@ def main():
     net.publishMQTT("IP", netCfg["IP"])
 
     net.subscribeMQTT("RUN",sub_cb)
+    net.subscribeMQTT("SLEEP_TIME",sub_cb)
 
     time.sleep_ms(500)
     net.checkMQTT()
+    sleepTime = (int(netCfg['SLEEP_TIME']) * 1000)
 
     if not fileExists("RUN"):
         print("RUN file does not exist")
