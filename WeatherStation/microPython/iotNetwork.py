@@ -18,7 +18,9 @@ class iotNetwork :
         self.sta_if = network.WLAN(network.STA_IF)
 
         if self.sta_if.isconnected():
+            print("Already connected, disconecting ...")
             self.sta_if.disconnect()
+            print("... done.")
 
         print('connecting to network...')
         self.sta_if.active(True)
