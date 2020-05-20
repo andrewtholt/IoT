@@ -7,16 +7,28 @@ import machine
 
 class iotNetwork :
     netCfg = None
+    wdogTime = 5000 # ms
+    tim = machine.Timer(-1)
 
-    def __init__(self):
+    netConnected = False
+    wdogTriggered = False
+
+    def __init__(self, w=5000):
+        self.wdogTime = w
         cfgFile = open('iotdb.db','r+b')
 
         self.netCfg = btree.open(cfgFile)
 
+    def wdog(a,b):
+        print("Wdog fired.")
+        self.wdogTriggered = True
+
     def connect(self):
         print("Connect")
-        self.sta_if = network.WLAN(network.STA_IF)
+        self.tim.init(period=self.wdogTime, mode=machine.Timer.ONE_SHOT, callback=self.wdog)
 
+        self.sta_if = network.WLAN(network.STA_IF)
+        
         if self.sta_if.isconnected():
             print("Already connected, disconecting ...")
             self.sta_if.disconnect()
@@ -34,6 +46,7 @@ class iotNetwork :
             pass
 
         print("... Connected")
+        self.tim.init(period=-1, mode=machine.Timer.ONE_SHOT)
 
     def disconnect(self):
         print("Disconnect")
@@ -48,6 +61,8 @@ class iotNetwork :
 
     def connectMQTT(self):
         print("MQTT...")
+        self.tim.init(period=self.wdogTime, mode=machine.Timer.ONE_SHOT, callback=self.wdog)
+
         mqttHost = (self.netCfg[b"MQTT_HOST"]).decode()
         mqttPort = int((self.netCfg[b"PORT"]).decode())
         self.base = (self.netCfg[b"MQTT_BASE"]).decode()
@@ -56,6 +71,8 @@ class iotNetwork :
 
         self.client = MQTTClient(clientId, mqttHost)
         self.client.connect()
+
+        self.tim.init(period=-1, mode=machine.Timer.ONE_SHOT)
         print("...Done")
 
     def checkMQTT(self):
