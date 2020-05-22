@@ -5,6 +5,8 @@ import btree
 import ubinascii
 import machine
 
+from time import sleep
+
 class iotNetwork :
     netCfg = None
     wdogTime = 5000 # ms
@@ -22,6 +24,9 @@ class iotNetwork :
     def wdog(a,b):
         print("Wdog fired.")
         self.wdogTriggered = True
+
+        machine.reset()
+
 
     def connect(self):
         print("Connect")
@@ -69,8 +74,12 @@ class iotNetwork :
 
         clientId = ubinascii.hexlify(machine.unique_id())
 
-        self.client = MQTTClient(clientId, mqttHost)
-        self.client.connect()
+        try:
+            self.client = MQTTClient(clientId, mqttHost)
+            self.client.connect()
+        except:
+            sleep(10)
+
 
         self.tim.init(period=-1, mode=machine.Timer.ONE_SHOT)
         print("...Done")
