@@ -21,7 +21,7 @@ class iotNetwork :
 
         self.netCfg = btree.open(cfgFile)
 
-    def wdog(a,b):
+    def wdog(self,b):
         print("Wdog fired.")
         self.wdogTriggered = True
 

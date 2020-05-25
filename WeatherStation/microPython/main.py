@@ -78,8 +78,6 @@ def deepSleep(msecs):
 
 def main():
     global netCfg
-    esp.osdebug(None)
-    gc.collect()
 
     resetDb = False
 
@@ -105,8 +103,6 @@ def main():
         sys.exit(1)
 
     print("... Done")
-    print("Free : ", gc.mem_free())
-    gc.collect()
 
     db = btree.open(f)
 
@@ -181,6 +177,9 @@ def main():
     mbar = env.get('BMP_PRESSURE')
     net.publishMQTT("pressure", str(mbar))
 
+    mbar = env.get('BMP_TEMPERATURE')
+    net.publishMQTT("bmp_temperature", str(mbar))
+
     light = env.get('LIGHT_LEVEL')
     if light >= 0:
         net.publishMQTT("light", str(light))
@@ -189,7 +188,6 @@ def main():
     # 
     # to HERE
     #
-    gc.collect()
 
     net.disconnectMQTT()
     net.disconnect()
