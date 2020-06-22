@@ -44,6 +44,9 @@ def sub_cb(t, m):
         else:
             print("No")
             runFlag = False
+            import webrepl
+
+            webrepl.start()
 
             try:
                 os.remove('RUN')
