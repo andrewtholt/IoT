@@ -12,7 +12,7 @@ TARGET=$2
 
 cp iot_config_${TARGET}.json iot_config.json
 
-FILES="bh1750fvi.py bmp180.py umqttsimple.py wemos.py iotNetwork.py iot_config.json main.py"
+FILES="dht12.py bh1750fvi.py bmp180.py umqttsimple.py wemos.py iotNetwork.py iot_config.json main.py"
 # FILES="iotNetwork.py iot_config.json main.py"
 
 for F in $FILES; do
