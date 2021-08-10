@@ -19,7 +19,9 @@ create table weather (
     name TEXT,
     data INTEGER,
     time INTERGER DEFAULT 0
+--     dt datetime DEFAULT current_timestamp
 );
 
 CREATE INDEX by_time ON weather(time);
+-- CREATE INDEX by_time ON weather(dt);
 
